@@ -1,8 +1,9 @@
 import { openDB, type IDBPDatabase } from 'idb'
 import type { Project, AudioAsset, Transcript } from '../contracts/project'
+import type { VideoAsset } from '../contracts/video'
 
 const DB_NAME = 'webmcp_audio_studio_db'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 interface StudioDBSchema {
   projects: {
@@ -14,6 +15,14 @@ interface StudioDBSchema {
     value: AudioAsset
   }
   assets_blob: {
+    key: string
+    value: Blob | ArrayBuffer
+  }
+  video_assets_meta: {
+    key: string
+    value: VideoAsset
+  }
+  video_assets_blob: {
     key: string
     value: Blob | ArrayBuffer
   }
@@ -40,6 +49,12 @@ export function getDB(): Promise<IDBPDatabase<StudioDBSchema>> {
         }
         if (!db.objectStoreNames.contains('assets_blob')) {
           db.createObjectStore('assets_blob')
+        }
+        if (!db.objectStoreNames.contains('video_assets_meta')) {
+          db.createObjectStore('video_assets_meta', { keyPath: 'id' })
+        }
+        if (!db.objectStoreNames.contains('video_assets_blob')) {
+          db.createObjectStore('video_assets_blob')
         }
         if (!db.objectStoreNames.contains('transcripts')) {
           db.createObjectStore('transcripts', { keyPath: 'assetId' })
@@ -71,7 +86,7 @@ export async function deleteProject(id: string): Promise<void> {
   await db.delete('projects', id)
 }
 
-// Asset Repositories (Binary data stored separately from metadata)
+// Audio Asset Repositories (Binary data stored separately from metadata)
 export async function saveAsset(meta: AudioAsset, data: Blob | ArrayBuffer): Promise<void> {
   const db = await getDB()
   const tx = db.transaction(['assets_meta', 'assets_blob'], 'readwrite')
@@ -107,6 +122,45 @@ export async function deleteAsset(id: string): Promise<void> {
     tx.objectStore('assets_meta').delete(id),
     tx.objectStore('assets_blob').delete(id),
     tx.objectStore('transcripts').delete(id),
+    tx.done,
+  ])
+}
+
+// Video Asset Repositories (Video binary data stored in IndexedDB separate from metadata)
+export async function saveVideoAsset(meta: VideoAsset, data: Blob | ArrayBuffer): Promise<void> {
+  const db = await getDB()
+  const tx = db.transaction(['video_assets_meta', 'video_assets_blob'], 'readwrite')
+  await Promise.all([
+    tx.objectStore('video_assets_meta').put(meta),
+    tx.objectStore('video_assets_blob').put(data, meta.id),
+    tx.done,
+  ])
+}
+
+export async function getVideoAssetMeta(id: string): Promise<VideoAsset | undefined> {
+  const db = await getDB()
+  return db.get('video_assets_meta', id)
+}
+
+export async function getVideoAssetBlob(id: string): Promise<Blob | undefined> {
+  const db = await getDB()
+  const result = await db.get('video_assets_blob', id)
+  if (!result) return undefined
+  if (result instanceof Blob) return result
+  return new Blob([result], { type: 'video/mp4' })
+}
+
+export async function listVideoAssets(): Promise<VideoAsset[]> {
+  const db = await getDB()
+  return db.getAll('video_assets_meta')
+}
+
+export async function deleteVideoAsset(id: string): Promise<void> {
+  const db = await getDB()
+  const tx = db.transaction(['video_assets_meta', 'video_assets_blob'], 'readwrite')
+  await Promise.all([
+    tx.objectStore('video_assets_meta').delete(id),
+    tx.objectStore('video_assets_blob').delete(id),
     tx.done,
   ])
 }
