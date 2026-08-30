@@ -3,20 +3,20 @@
 ## 1. Architectural Principles
 
 1. Client-first: no application database or mandatory backend for MVP.
-2. Local-first: media and project state live in IndexedDB.
+2. Local-first: media (audio and video) and project state live in IndexedDB.
 3. Worker-first for expensive ML/audio preparation.
 4. Contract-first: public application operations use Zod schemas and TypeScript types.
 5. Single command path: UI and WebMCP invoke the same commands.
-6. No binary audio payloads through WebMCP tool parameters. Tools reference local `assetId` values.
+6. No binary audio or video payloads through WebMCP tool parameters. Tools reference local `assetId` values.
 7. Workers never import UI, React, Zustand, or route modules.
-8. Audio buffers do not live in Zustand.
+8. Audio and video binary Blobs do not live in Zustand.
 9. Adapters never import UI components directly.
 10. Browser-only APIs must be isolated behind browser/platform adapters.
 
 ## 2. High-Level Data Flow
 
 ```text
-UI
+UI (Audio & Video)
  │
  ├──────────────┐
  │              │
@@ -25,14 +25,14 @@ Command Bus   WebMCP Tools
  │              │
  └──────┬───────┘
         ▼
- Application Services
+ Application Services (Audio & Video)
         │
- ┌──────┼─────────┐
- ▼      ▼         ▼
-STT    TTS      Music
-Worker Worker   Worker
- │      │         │
- └──────┼─────────┘
+ ┌──────┼─────────┬──────────────┐
+ ▼      ▼         ▼              ▼
+STT    TTS      Music          Video
+Worker Worker   Worker        Service (Web Audio decode)
+ │      │         │              │
+ └──────┼─────────┴──────────────┘
         ▼
     Audio Engine
         │
@@ -52,13 +52,15 @@ Timeline   Mixer/Ducking
 - Track metadata.
 - Clip metadata.
 - Selected clip / track.
+- Selected video ID & playback state (time, play, mute, volume).
 - Generation status.
 - Progress state.
 - Playback UI state.
 - Error state.
 
 ### IndexedDB owns
-- Original audio assets.
+- Original audio assets (`assets_blob`, `assets_meta`).
+- Original video assets (`video_assets_blob`, `video_assets_meta`).
 - Generated audio assets.
 - Transcription results.
 - Project snapshots.
@@ -66,29 +68,28 @@ Timeline   Mixer/Ducking
 
 ### Web Audio API owns
 - Decoded AudioBuffers used for playback.
+- Video audio decoding via `AudioContext.decodeAudioData`.
 - Audio nodes.
 - Gain.
 - Compression / ducking.
 - Analyser state.
 - Master output.
 
-Large binary buffers must never be placed in Zustand.
+Large binary buffers and video files must never be placed in Zustand.
 
 ## 4. Command Bus
 
-All user mutations must resolve through application commands.
+All user and agent mutations must resolve through application commands.
 
 Example command categories:
-- `project.create`
-- `asset.import`
+- `project.create`, `project.load`, `project.delete`, `project.rename`
+- `asset.import`, `asset.delete`
+- `video.import`, `video.delete`, `video.extractAudio`, `video.getFrame`
 - `transcription.run`
 - `voiceover.generate`
 - `music.generate`
-- `timeline.addClip`
-- `timeline.updateClip`
-- `timeline.removeClip`
-- `mixer.setDucking`
-- `project.mix`
+- `timeline.addClip`, `timeline.updateClip`, `timeline.removeClip`, `timeline.updateTrack`
+- `mixer.setDucking`, `project.mix`
 - `project.export`
 
 The WebMCP layer is an adapter over these commands, not a second business-logic implementation.
@@ -97,19 +98,12 @@ The WebMCP layer is an adapter over these commands, not a second business-logic 
 
 Use Zod schemas as runtime validation and TypeScript inference.
 
-Contracts should cover:
-- Project.
-- Asset.
-- Track.
-- Clip.
-- Transcript.
-- Voiceover request.
-- Music request.
-- Export request.
-- Command results.
-- Application errors.
-
-WebMCP tool schemas should remain compatible with the browser WebMCP API and should not expose internal implementation details.
+Contracts cover:
+- Project (`Project`, `Track`, `Clip`, `DuckingConfig`).
+- Audio Asset (`AudioAsset`, `Transcript`).
+- Video Asset (`VideoAsset`, `VideoMetadata`, `VideoAssetReference`).
+- Request schemas (`VoiceoverRequest`, `MusicRequest`, `ExportRequest`, `ImportVideoRequest`, `ExtractAudioRequest`, `VideoFrameRequest`).
+- Command results & WebMCP tool definitions.
 
 ## 6. WebMCP Architecture
 
@@ -117,14 +111,6 @@ Use the browser WebMCP registration API:
 
 ```typescript
 document.modelContext.registerTool(...)
-```
-
-Do not create a custom `/api/webmcp` server for MVP.
-
-Tool registration belongs in:
-
-```text
-src/webmcp/register-tools.ts
 ```
 
 Tool execution delegates to application commands:
@@ -145,39 +131,29 @@ structured result
 
 ## 7. Component Registry
 
-### UI
-- Button
-- IconButton
-- Slider
-- Select
-- Textarea
-- Dialog
-- Toast
-- Progress
-- Tabs
-
 ### Studio
-- StudioShell
-- ProjectHeader
-- AssetPanel
-- Timeline
-- TimelineTrack
-- TimelineClip
-- PlaybackControls
-- MasterMeter
+- `StudioShell`
+- `PlaybackControls`
+- `AssetPanel` (Audio & Video tabs)
+- `MasterMeter`
+- `Timeline`, `TimelineTrack`, `TimelineClip`
 
-### Editor
-- ScriptEditor
-- VoiceSelector
-- MusicPrompt
-- GenerationProgress
+### Video Workspace
+- `VideoPanel`
+- `VideoUploader`
+- `VideoPlayer`
+- `VideoAssetList`
+- `VideoMetadata`
+
+### Audio Features
+- `TranscriptionPanel`
+- `VoiceoverPanel`
+- `MusicPanel`
+- `MixerPanel`
 
 ### Agent
-- AgentInspector
-- ToolCallLog
-- ToolStatus
-
-Components consume feature APIs and never directly manipulate worker internals.
+- `AgentInspector` (Interactive tool runner & 1-Click AI Demo flows)
+- `ToolCallLog`
 
 ## 8. Directory Layout
 
@@ -190,23 +166,24 @@ src/
 │   ├── ui/
 │   ├── studio/
 │   ├── timeline/
-│   ├── editor/
 │   └── agent/
 ├── features/
+│   ├── video/
+│   │   ├── components/
+│   │   └── services/
 │   ├── transcription/
 │   ├── voiceover/
 │   ├── music/
-│   ├── mixer/
-│   └── export/
+│   └── mixer/
 ├── workers/
 │   ├── whisper.worker.ts
 │   ├── tts.worker.ts
 │   └── music.worker.ts
 ├── audio/
 │   ├── audio-context.ts
-│   ├── graph.ts
+│   ├── audio-buffer-pool.ts
+│   ├── engine.ts
 │   ├── ducking.ts
-│   ├── timeline.ts
 │   └── exporters/
 ├── webmcp/
 │   ├── register-tools.ts
@@ -216,81 +193,14 @@ src/
 ├── contracts/
 │   ├── project.ts
 │   ├── audio.ts
-│   ├── transcription.ts
-│   ├── voiceover.ts
-│   └── music.ts
+│   └── video.ts
 ├── stores/
 │   ├── project-store.ts
-│   └── playback-store.ts
+│   ├── video-store.ts
+│   ├── playback-store.ts
+│   └── agent-store.ts
 ├── storage/
-│   ├── indexed-db.ts
-│   ├── asset-store.ts
-│   └── project-store.ts
+│   └── indexed-db.ts
 └── lib/
-    ├── errors/
-    ├── browser/
-    └── utils/
+    └── utils.ts
 ```
-
-## 9. Boundary Rules
-
-### Workers
-Workers may import:
-- ML libraries.
-- Audio codecs / DSP libraries.
-- Shared contracts.
-- Pure utility functions.
-
-Workers may not import:
-- React.
-- UI components.
-- Zustand stores.
-- Route modules.
-- Browser UI state.
-
-### Audio layer
-Audio modules may import:
-- Contracts.
-- Pure utilities.
-- Browser audio APIs.
-
-Audio modules may not import:
-- React components.
-- WebMCP registration code.
-
-### Storage
-Storage adapters may import:
-- IndexedDB APIs.
-- Contracts.
-
-Storage adapters may not import:
-- UI.
-- WebMCP.
-- Zustand.
-
-### WebMCP
-WebMCP may import:
-- Contracts.
-- Command bus.
-- Application services.
-
-WebMCP may not contain duplicated business logic.
-
-### UI
-UI may call:
-- Feature hooks.
-- Command APIs.
-- Store selectors.
-
-UI must not directly create ML workers unless the feature abstraction requires it.
-
-## 10. Netlify
-
-Deploy as a frontend-only TanStack Start SPA.
-
-Required:
-- Static client build.
-- SPA fallback.
-- Cross-origin isolation headers when required by the chosen WebGPU/WASM execution path.
-- No application database.
-- No server-side audio processing in MVP.

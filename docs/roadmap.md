@@ -140,7 +140,7 @@ Milestones 1–5.
 
 ### Work
 - Browser WebMCP registration (`document.modelContext.registerTool`, `window.modelContext`, and `window.__webmcp_callTool`).
-- All 7 WebMCP Tool definitions with schemas, parameters, and `readOnlyHint` flags.
+- WebMCP Tool definitions with schemas, parameters, and `readOnlyHint` flags.
 - WebMCP tool executors delegating to the unified Command Bus (`UI === Agent`).
 - Agent Studio Inspector dashboard with interactive JSON tool runner.
 - 1-Click Autonomous Agent Demo workflow sequence.
@@ -165,7 +165,6 @@ Milestone 6.
 - Performance optimization and lazy chunked loading.
 - Browser compatibility fallbacks for WebGPU and WASM.
 - Polished DAW aesthetics, glassmorphism layout, and accessible keybindings (Space = play/pause).
-- 1-Click Autonomous Demo Sequence in WebMCP Inspector.
 - Comprehensive README and updated architectural documentation.
 - Netlify SPA deployment with COOP/COEP isolation headers.
 
@@ -176,4 +175,32 @@ Milestone 6.
 - [x] No critical console errors.
 - [x] Documentation is complete.
 - [x] Public repository is ready.
-- [x] Hackathon submission assets are ready.
+
+## Milestone 8 — Browser Video Assets & WebMCP Video Access (Status: COMPLETED)
+
+### Prerequisites
+Milestone 7.
+
+### Work
+- `VideoAsset` and `VideoMetadata` generic asset models.
+- IndexedDB schema migration to v2 with `video_assets_meta` and `video_assets_blob`.
+- Local video upload (drag-and-drop / file picker), MIME validation, and metadata extraction.
+- Offscreen Canvas video thumbnail generation and timestamped frame capture.
+- In-browser local audio soundtrack extraction via `AudioContext.decodeAudioData` converting video audio directly into 16-bit PCM WAV project assets.
+- Whisper STT transcription of extracted video audio.
+- Video Workspace UI (`VideoUploader`, `VideoPlayer`, `VideoAssetList`, `VideoMetadata`, `VideoPanel`).
+- Media Asset panel switcher (Audio & Video tabs).
+- 6 WebMCP Video tools: `list_video_assets`, `get_video_metadata`, `get_video_asset`, `extract_video_audio`, `get_video_transcript`, `get_video_frame`.
+- 1-Click End-to-End **Video-to-Narration AI Agent Workflow** in Agent Inspector.
+- ADR 004 and updated documentation.
+
+### Definition of Done
+- [x] User can upload video files locally in browser.
+- [x] Video survives reload (IndexedDB).
+- [x] Video preview player with scrubbing, mute/volume, and frame capture.
+- [x] Audio can be extracted locally without a backend server.
+- [x] Extracted audio becomes a normal project audio asset.
+- [x] Whisper STT can transcribe extracted audio.
+- [x] WebMCP tools discover and operate on video assets.
+- [x] Large video binaries are never placed in Zustand.
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm build` pass.
