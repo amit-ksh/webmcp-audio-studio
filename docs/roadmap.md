@@ -92,24 +92,26 @@ Milestone 1.
 - [x] Generated audio is inserted into timeline.
 - [x] Failed generation leaves previous project intact.
 
-## Milestone 4 — Music Generation
+## Milestone 4 — Music Generation (Status: COMPLETED)
 
 ### Prerequisites
 Milestone 1.
 
 ### Work
-- Music prompt.
-- Mood / genre presets.
-- Procedural/preset MVP generator.
-- Music worker where computation requires it.
-- Generated asset persistence.
+- Multi-layer procedural harmonic music synthesizer in Web Worker.
+- 4 rich mood presets (`energetic_tech`, `cinematic_reveal`, `ambient_minimal`, `upbeat_fun`).
+- Sub-bass, polyphonic pads, stereo arpeggiator, and dynamic percussion.
+- Duration (10s - 120s) and Tempo (70 - 160 BPM) controls.
+- Stereo 16-bit WAV persistence in IndexedDB and in-memory cache.
+- Timeline automatic placement on Backing Music track.
+- Command Bus integration (`music.generate`).
 
 ### Definition of Done
-- User can enter a prompt.
-- User can select mood.
-- Generator returns playable audio.
-- Audio can be added to timeline.
-- Browser memory usage remains bounded.
+- [x] User can enter a music prompt.
+- [x] User can select mood preset and tempo.
+- [x] Generator returns playable stereo backing track.
+- [x] Audio can be added to timeline.
+- [x] Browser memory usage remains bounded.
 
 ## Milestone 5 — Mixer & Ducking
 

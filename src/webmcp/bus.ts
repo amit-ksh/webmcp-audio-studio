@@ -55,6 +55,16 @@ export type StudioCommand =
         autoInsertToTimeline?: boolean
       }
     }
+  | {
+      type: 'music.generate'
+      payload: {
+        prompt: string
+        mood?: 'energetic_tech' | 'cinematic_reveal' | 'ambient_minimal' | 'upbeat_fun'
+        durationSec?: number
+        bpm?: number
+        autoInsertToTimeline?: boolean
+      }
+    }
 
 class CommandBus {
   public async execute(command: StudioCommand): Promise<CommandResult> {
@@ -227,6 +237,29 @@ class CommandBus {
           return {
             success: true,
             message: `Generated voiceover (${formatTime(asset.durationSec)})`,
+            data: asset,
+          }
+        }
+
+        case 'music.generate': {
+          const {
+            prompt,
+            mood = 'energetic_tech',
+            durationSec = 30,
+            bpm = 120,
+            autoInsertToTimeline = true,
+          } = command.payload
+          const { musicService } = await import('../features/music/music-service')
+          const asset = await musicService.generateMusic({
+            prompt,
+            mood,
+            durationSec,
+            bpm,
+            autoInsertToTimeline,
+          })
+          return {
+            success: true,
+            message: `Generated backing track (${formatTime(asset.durationSec)})`,
             data: asset,
           }
         }
