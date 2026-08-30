@@ -24,28 +24,29 @@ None.
 - [x] Netlify preview can build successfully.
 - [x] Documentation matches the implemented architecture.
 
-## Milestone 1 — Local Project & Audio Foundation
+## Milestone 1 — Local Project & Audio Foundation (Status: COMPLETED)
 
 ### Prerequisites
 Milestone 0.
 
 ### Work
-- Project model.
-- IndexedDB repositories.
-- Asset import.
-- Audio decoding.
-- AudioContext lifecycle.
-- Timeline model.
-- Basic playback.
-- WAV exporter.
+- Project, Track, Clip, AudioAsset Zod models.
+- IndexedDB repositories (`projects`, `assets_meta`, `assets_blob`, `transcripts`).
+- Audio asset file drag-and-drop & file picker import.
+- Audio decoding into in-memory `AudioBuffer` pool.
+- AudioContext lifecycle and user-gesture auto-resume.
+- Multi-track timeline model and interactive scrubbing/drag.
+- Real-time stereo VU level meter using `AnalyserNode`.
+- Offline master mixdown renderer and 16-bit PCM WAV exporter.
+- Unified Command Bus.
 
 ### Definition of Done
-- User can create a project.
-- User can import an audio asset.
-- Asset survives reload.
-- Audio can be played.
-- Clip can be positioned on timeline.
-- Master WAV can be exported.
+- [x] User can create a project.
+- [x] User can import an audio asset.
+- [x] Asset survives reload (IndexedDB).
+- [x] Audio can be auditioned and played.
+- [x] Clip can be positioned on timeline.
+- [x] Master WAV can be exported.
 
 ## Milestone 2 — Speech-to-Text
 

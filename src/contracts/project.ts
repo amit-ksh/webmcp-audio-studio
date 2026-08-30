@@ -93,3 +93,16 @@ export const ProjectSchema = z.object({
   masterGain: z.number().default(1.0),
 })
 export type Project = z.infer<typeof ProjectSchema>
+
+export const GenerationJobSchema = z.object({
+  id: z.string(),
+  type: z.enum(['transcription', 'voiceover', 'music']),
+  status: z.enum(['pending', 'processing', 'completed', 'failed', 'cancelled']),
+  progress: z.number().min(0).max(100).default(0),
+  message: z.string().optional(),
+  error: z.string().optional(),
+  resultAssetId: z.string().optional(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type GenerationJob = z.infer<typeof GenerationJobSchema>
