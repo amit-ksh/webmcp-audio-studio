@@ -1,6 +1,6 @@
 # Implementation Roadmap
 
-## Milestone 0 — Repository & Architecture Baseline
+## Milestone 0 — Repository & Architecture Baseline (Status: COMPLETED)
 
 ### Prerequisites
 None.
@@ -10,19 +10,19 @@ None.
 - Configure pnpm.
 - Configure TypeScript strict mode.
 - Configure ESLint and Prettier.
-- Configure Tailwind.
+- Configure Tailwind/CSS design tokens.
 - Configure TanStack Start SPA mode.
-- Configure Netlify.
+- Configure Netlify with COOP/COEP headers.
 - Create documentation and ADRs.
-- Establish source directory boundaries.
+- Establish source directory boundaries and contracts.
 
 ### Definition of Done
-- `pnpm lint` passes.
-- `pnpm typecheck` passes.
-- `pnpm build` passes.
-- Clean repository contains no generated secrets.
-- Netlify preview can build successfully.
-- Documentation matches the implemented architecture.
+- [x] `pnpm lint` passes.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm build` passes.
+- [x] Clean repository contains no generated secrets.
+- [x] Netlify preview can build successfully.
+- [x] Documentation matches the implemented architecture.
 
 ## Milestone 1 — Local Project & Audio Foundation
 

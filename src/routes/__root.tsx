@@ -13,7 +13,12 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'WebMCP Audio Studio — Browser-First AI Audio Production',
+      },
+      {
+        name: 'description',
+        content:
+          'Browser-first AI audio production studio for SaaS launch videos, product demos, and agentic workflows with WebMCP.',
       },
     ],
     links: [
