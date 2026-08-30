@@ -7,7 +7,7 @@ interface PlaybackStoreState {
   masterVolume: number
   isLooping: boolean
   activeTab: 'studio' | 'editor' | 'agent'
-  sidebarTab: 'assets' | 'voiceover' | 'music' | 'transcription' | 'mixer' | 'agent'
+  sidebarTab: 'assets' | 'video' | 'voiceover' | 'music' | 'transcription' | 'mixer' | 'agent'
 
   setIsPlaying: (playing: boolean) => void
   setCurrentTime: (time: number) => void
@@ -15,7 +15,9 @@ interface PlaybackStoreState {
   setMasterVolume: (volume: number) => void
   setIsLooping: (looping: boolean) => void
   setActiveTab: (tab: 'studio' | 'editor' | 'agent') => void
-  setSidebarTab: (tab: 'assets' | 'voiceover' | 'music' | 'transcription' | 'mixer' | 'agent') => void
+  setSidebarTab: (
+    tab: 'assets' | 'video' | 'voiceover' | 'music' | 'transcription' | 'mixer' | 'agent',
+  ) => void
 }
 
 export const usePlaybackStore = create<PlaybackStoreState>((set) => ({
@@ -30,7 +32,8 @@ export const usePlaybackStore = create<PlaybackStoreState>((set) => ({
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setCurrentTime: (currentTime) => set({ currentTime }),
   setZoom: (zoom) => set({ zoom: Math.max(10, Math.min(300, zoom)) }),
-  setMasterVolume: (masterVolume) => set({ masterVolume: Math.max(0, Math.min(1.5, masterVolume)) }),
+  setMasterVolume: (masterVolume) =>
+    set({ masterVolume: Math.max(0, Math.min(1.5, masterVolume)) }),
   setIsLooping: (isLooping) => set({ isLooping }),
   setActiveTab: (activeTab) => set({ activeTab }),
   setSidebarTab: (sidebarTab) => set({ sidebarTab }),

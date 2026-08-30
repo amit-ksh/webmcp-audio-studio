@@ -6,21 +6,23 @@ import {
   Bot,
   Sliders,
   FileAudio,
+  Film,
   Sparkles,
   Mic,
   Music,
   Activity,
 } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
+import { useVideoStore } from '../../stores/video-store'
 import { usePlaybackStore } from '../../stores/playback-store'
 import { useAgentStore } from '../../stores/agent-store'
 import { PlaybackControls } from './PlaybackControls'
 import { AssetPanel } from './AssetPanel'
+import { VideoPanel } from '../../features/video/components/VideoPanel'
 import { Timeline } from '../timeline/Timeline'
 import { downloadBlob } from '../../audio/exporters/wav-exporter'
 import { commandBus } from '../../webmcp/bus'
 
-// Placeholder panels for upcoming sprints
 import { TranscriptionPanel } from '../../features/transcription/TranscriptionPanel'
 import { VoiceoverPanel } from '../../features/voiceover/VoiceoverPanel'
 import { MusicPanel } from '../../features/music/MusicPanel'
@@ -30,8 +32,15 @@ import { AgentInspector } from '../agent/AgentInspector'
 import { registerWebMCPTools } from '../../webmcp/register-tools'
 
 export const StudioShell: React.FC = () => {
-  const { currentProject, projectList, initStore, createNewProject, loadProject, updateProjectMeta } =
-    useProjectStore()
+  const {
+    currentProject,
+    projectList,
+    initStore: initProjectStore,
+    createNewProject,
+    loadProject,
+    updateProjectMeta,
+  } = useProjectStore()
+  const initVideoStore = useVideoStore((state) => state.initStore)
   const { sidebarTab, setSidebarTab } = usePlaybackStore()
   const isAgentActive = useAgentStore((state) => state.isAgentActive)
   const [isExporting, setIsExporting] = useState(false)
@@ -39,9 +48,10 @@ export const StudioShell: React.FC = () => {
   const [projectNameInput, setProjectNameInput] = useState('')
 
   useEffect(() => {
-    initStore()
+    initProjectStore()
+    initVideoStore()
     registerWebMCPTools()
-  }, [initStore])
+  }, [initProjectStore, initVideoStore])
 
   useEffect(() => {
     if (currentProject) {
@@ -199,6 +209,19 @@ export const StudioShell: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setSidebarTab('video')}
+            className={`p-2.5 rounded-xl transition-all flex flex-col items-center gap-1 ${
+              sidebarTab === 'video'
+                ? 'bg-cyan-600/20 text-cyan-400 border border-cyan-500/40 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+            }`}
+            title="Video Workspace"
+          >
+            <Film className="w-5 h-5" />
+            <span className="text-[9px] font-medium">Video</span>
+          </button>
+
+          <button
             onClick={() => setSidebarTab('voiceover')}
             className={`p-2.5 rounded-xl transition-all flex flex-col items-center gap-1 ${
               sidebarTab === 'voiceover'
@@ -269,6 +292,7 @@ export const StudioShell: React.FC = () => {
         {/* Active Side Panel */}
         <div className="studio-sidebar">
           {sidebarTab === 'assets' && <AssetPanel />}
+          {sidebarTab === 'video' && <VideoPanel />}
           {sidebarTab === 'voiceover' && <VoiceoverPanel />}
           {sidebarTab === 'music' && <MusicPanel />}
           {sidebarTab === 'transcription' && <TranscriptionPanel />}
