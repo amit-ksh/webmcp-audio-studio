@@ -133,29 +133,28 @@ Milestones 2, 3, and 4.
 - [x] Ducking amount, attack, and release are adjustable.
 - [x] Master preview matches exported audio within expected encoder tolerances.
 
-## Milestone 6 — WebMCP
+## Milestone 6 — WebMCP (Status: COMPLETED)
 
 ### Prerequisites
 Milestones 1–5.
 
 ### Work
-- WebMCP registration.
-- Tool definitions.
-- Tool validation.
-- Command delegation.
-- Tool-call inspector.
-- Structured errors.
-- Cancellation.
+- Browser WebMCP registration (`document.modelContext.registerTool`, `window.modelContext`, and `window.__webmcp_callTool`).
+- All 7 WebMCP Tool definitions with schemas, parameters, and `readOnlyHint` flags.
+- WebMCP tool executors delegating to the unified Command Bus (`UI === Agent`).
+- Agent Studio Inspector dashboard with interactive JSON tool runner.
+- 1-Click Autonomous Agent Demo workflow sequence.
+- Live tool call logs with duration, payloads, and status badges.
 
 ### Definition of Done
-- Agent can inspect project state.
-- Agent can trigger transcription.
-- Agent can generate voiceover.
-- Agent can generate music.
-- Agent can modify timeline.
-- Agent can mix/export.
-- UI and agent use identical command implementations.
-- Tool calls are observable in the UI.
+- [x] Agent can inspect project state (`get_project_state`).
+- [x] Agent can trigger transcription (`transcribe_audio_asset`).
+- [x] Agent can generate voiceover (`generate_voiceover`).
+- [x] Agent can generate music (`generate_music`).
+- [x] Agent can modify timeline (`update_audio_track`).
+- [x] Agent can mix and export (`mix_audio_project`, `export_audio`).
+- [x] UI and agent use identical command implementations.
+- [x] Tool calls are observable in the UI.
 
 ## Milestone 7 — Hackathon Hardening
 

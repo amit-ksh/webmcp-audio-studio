@@ -27,6 +27,8 @@ import { MusicPanel } from '../../features/music/MusicPanel'
 import { MixerPanel } from '../../features/mixer/MixerPanel'
 import { AgentInspector } from '../agent/AgentInspector'
 
+import { registerWebMCPTools } from '../../webmcp/register-tools'
+
 export const StudioShell: React.FC = () => {
   const { currentProject, projectList, initStore, createNewProject, loadProject, updateProjectMeta } =
     useProjectStore()
@@ -38,6 +40,7 @@ export const StudioShell: React.FC = () => {
 
   useEffect(() => {
     initStore()
+    registerWebMCPTools()
   }, [initStore])
 
   useEffect(() => {
