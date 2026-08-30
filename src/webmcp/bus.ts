@@ -5,7 +5,7 @@ import { getAudioContext } from '../audio/audio-context'
 import { cacheAudioBuffer, removeAudioBufferFromCache } from '../audio/audio-buffer-pool'
 import type { AudioAsset, DuckingConfig, Clip } from '../contracts/project'
 import type { CommandResult } from '../contracts/audio'
-import { generateId } from '../lib/utils'
+import { generateId, formatTime } from '../lib/utils'
 
 export type StudioCommand =
   | { type: 'project.create'; payload: { name?: string } }
@@ -45,6 +45,16 @@ export type StudioCommand =
   | { type: 'project.mix'; payload: { duckingAmountDb?: number; masterGain?: number } }
   | { type: 'project.export'; payload: { format?: 'wav' } }
   | { type: 'transcription.run'; payload: { assetId: string; language?: string } }
+  | {
+      type: 'voiceover.generate'
+      payload: {
+        text: string
+        voiceId?: string
+        speed?: number
+        pitch?: number
+        autoInsertToTimeline?: boolean
+      }
+    }
 
 class CommandBus {
   public async execute(command: StudioCommand): Promise<CommandResult> {
@@ -195,6 +205,29 @@ class CommandBus {
             success: true,
             message: `Transcribed audio asset (${transcript.segments.length} segments)`,
             data: transcript,
+          }
+        }
+
+        case 'voiceover.generate': {
+          const {
+            text,
+            voiceId = 'narrator_male',
+            speed = 1.0,
+            pitch = 1.0,
+            autoInsertToTimeline = true,
+          } = command.payload
+          const { voiceoverService } = await import('../features/voiceover/voiceover-service')
+          const asset = await voiceoverService.generateVoiceover({
+            text,
+            voiceId,
+            speed,
+            pitch,
+            autoInsertToTimeline,
+          })
+          return {
+            success: true,
+            message: `Generated voiceover (${formatTime(asset.durationSec)})`,
+            data: asset,
           }
         }
 

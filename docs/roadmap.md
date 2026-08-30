@@ -70,25 +70,27 @@ Milestone 1.
 - [x] WASM fallback works.
 - [x] Worker failure does not corrupt project state.
 
-## Milestone 3 — Text-to-Speech
+## Milestone 3 — Text-to-Speech (Status: COMPLETED)
 
 ### Prerequisites
 Milestone 1.
 
 ### Work
-- TTS worker.
-- Voice selection.
-- Speed controls.
-- Voiceover asset persistence.
-- Timeline insertion.
+- TTS speech acoustic synthesis Web Worker.
+- Multi-timbre vocal personas (Tech Narrator, SaaS Host, Launch Energy, Executive Calm).
+- Speed (0.5x - 1.75x) and Pitch (0.75x - 1.25x) controls.
+- Script templates (SaaS Launch, Feature Explainer, Developer Demo).
+- Audio asset persistence in IndexedDB and in-memory cache.
+- Timeline automatic clip placement on Voiceover track.
+- Command Bus integration (`voiceover.generate`).
 
 ### Definition of Done
-- User can enter narration.
-- User can select a voice.
-- Voiceover can be generated.
-- Generated audio is playable.
-- Generated audio can be inserted into timeline.
-- Failed generation leaves the previous project intact.
+- [x] User can enter narration script.
+- [x] User can select vocal persona.
+- [x] Voiceover can be generated in Web Worker.
+- [x] Generated audio is playable in asset audition player.
+- [x] Generated audio is inserted into timeline.
+- [x] Failed generation leaves previous project intact.
 
 ## Milestone 4 — Music Generation
 
