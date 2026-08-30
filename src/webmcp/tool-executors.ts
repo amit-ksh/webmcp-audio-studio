@@ -1,6 +1,8 @@
 import { commandBus } from './bus'
 import { useProjectStore } from '../stores/project-store'
+import { useVideoStore } from '../stores/video-store'
 import { useAgentStore } from '../stores/agent-store'
+import { getVideoAssetMeta, getTranscript } from '../storage/indexed-db'
 import { dbToLinear } from '../lib/utils'
 import type { WebMCPToolResult } from './types'
 
@@ -17,6 +19,7 @@ export async function executeWebMCPTool(
     switch (toolName) {
       case 'get_project_state': {
         const store = useProjectStore.getState()
+        const videoStore = useVideoStore.getState()
         const project = store.currentProject
         if (!project) {
           result = { success: false, error: 'No active project found' }
@@ -55,8 +58,212 @@ export async function executeWebMCPTool(
                 sampleRate: a.sampleRate,
                 hasTranscript: Boolean(a.transcript),
               })),
+              videos: videoStore.videos.map((v) => ({
+                id: v.id,
+                name: v.name,
+                durationSec: v.durationSec,
+                width: v.metadata.width,
+                height: v.metadata.height,
+                hasAudio: v.metadata.hasAudio,
+                associatedAudioAssetId: v.associatedAudioAssetId,
+              })),
             },
           }
+        }
+        break
+      }
+
+      case 'list_video_assets': {
+        const videoStore = useVideoStore.getState()
+        const videos = videoStore.videos.map((v) => ({
+          assetId: v.id,
+          name: v.name,
+          durationSec: v.durationSec,
+          width: v.metadata.width,
+          height: v.metadata.height,
+          mimeType: v.mimeType,
+          hasAudio: v.metadata.hasAudio,
+        }))
+
+        result = {
+          success: true,
+          message: `Found ${videos.length} video asset(s)`,
+          data: { videos },
+        }
+        break
+      }
+
+      case 'get_video_metadata': {
+        const assetId = String(args.assetId || '')
+        if (!assetId) {
+          result = { success: false, error: 'Parameter "assetId" is required' }
+          break
+        }
+
+        const video =
+          useVideoStore.getState().videos.find((v) => v.id === assetId) ||
+          (await getVideoAssetMeta(assetId))
+
+        if (!video) {
+          result = { success: false, error: `Video asset not found: ${assetId}` }
+          break
+        }
+
+        result = {
+          success: true,
+          message: `Metadata for "${video.name}"`,
+          data: {
+            assetId: video.id,
+            name: video.name,
+            durationSec: video.durationSec,
+            width: video.metadata.width,
+            height: video.metadata.height,
+            frameRate: video.metadata.frameRate,
+            mimeType: video.mimeType,
+            sizeBytes: video.sizeBytes,
+            hasAudio: video.metadata.hasAudio,
+          },
+        }
+        break
+      }
+
+      case 'get_video_asset': {
+        const assetId = String(args.assetId || '')
+        if (!assetId) {
+          result = { success: false, error: 'Parameter "assetId" is required' }
+          break
+        }
+
+        const video =
+          useVideoStore.getState().videos.find((v) => v.id === assetId) ||
+          (await getVideoAssetMeta(assetId))
+
+        if (!video) {
+          result = { success: false, error: `Video asset not found: ${assetId}` }
+          break
+        }
+
+        // Return structured local asset reference (never large binary JSON dump)
+        result = {
+          success: true,
+          message: `Resolved video asset "${video.name}"`,
+          data: {
+            assetId: video.id,
+            name: video.name,
+            mimeType: video.mimeType,
+            sizeBytes: video.sizeBytes,
+            durationSec: video.durationSec,
+            width: video.metadata.width,
+            height: video.metadata.height,
+          },
+        }
+        break
+      }
+
+      case 'extract_video_audio': {
+        const assetId = String(args.assetId || '')
+        if (!assetId) {
+          result = { success: false, error: 'Parameter "assetId" is required' }
+          break
+        }
+
+        const cmdRes = await commandBus.execute({
+          type: 'video.extractAudio',
+          payload: { videoAssetId: assetId },
+        })
+
+        if (!cmdRes.success || !cmdRes.data) {
+          result = {
+            success: false,
+            error: cmdRes.error || 'Failed to extract audio from video',
+          }
+          break
+        }
+
+        const data = cmdRes.data as {
+          videoAssetId: string
+          audioAssetId: string
+          durationSec: number
+        }
+
+        result = {
+          success: true,
+          message: `Successfully extracted audio from video`,
+          data: {
+            videoAssetId: data.videoAssetId,
+            audioAssetId: data.audioAssetId,
+            durationSec: data.durationSec,
+          },
+        }
+        break
+      }
+
+      case 'get_video_transcript': {
+        const assetId = String(args.assetId || '')
+        if (!assetId) {
+          result = { success: false, error: 'Parameter "assetId" is required' }
+          break
+        }
+
+        const video =
+          useVideoStore.getState().videos.find((v) => v.id === assetId) ||
+          (await getVideoAssetMeta(assetId))
+
+        if (!video) {
+          result = { success: false, error: `Video asset not found: ${assetId}` }
+          break
+        }
+
+        // If audio has not been extracted or no transcript is saved yet
+        if (!video.associatedAudioAssetId) {
+          result = {
+            success: false,
+            error: 'TRANSCRIPT_NOT_FOUND',
+            message:
+              'No audio has been extracted from this video yet. Call "extract_video_audio" first, then "transcribe_audio_asset".',
+          }
+          break
+        }
+
+        const transcript = await getTranscript(video.associatedAudioAssetId)
+        if (!transcript) {
+          result = {
+            success: false,
+            error: 'TRANSCRIPT_NOT_FOUND',
+            message:
+              'Audio has been extracted, but transcription has not been run. Call "transcribe_audio_asset" with the audio asset ID.',
+            data: { audioAssetId: video.associatedAudioAssetId },
+          }
+          break
+        }
+
+        result = {
+          success: true,
+          message: `Found transcript with ${transcript.segments.length} segments`,
+          data: transcript,
+        }
+        break
+      }
+
+      case 'get_video_frame': {
+        const assetId = String(args.assetId || '')
+        const timeSec = typeof args.timeSec === 'number' ? args.timeSec : 0
+
+        if (!assetId) {
+          result = { success: false, error: 'Parameter "assetId" is required' }
+          break
+        }
+
+        const cmdRes = await commandBus.execute({
+          type: 'video.getFrame',
+          payload: { videoAssetId: assetId, timeSec },
+        })
+
+        result = {
+          success: cmdRes.success,
+          message: cmdRes.message,
+          data: cmdRes.data,
+          error: cmdRes.error,
         }
         break
       }
@@ -112,7 +319,9 @@ export async function executeWebMCPTool(
           result = { success: false, error: 'Parameter "prompt" is required' }
           break
         }
-        const mood = (args.mood as 'energetic_tech' | 'cinematic_reveal' | 'ambient_minimal' | 'upbeat_fun') || 'energetic_tech'
+        const mood =
+          (args.mood as 'energetic_tech' | 'cinematic_reveal' | 'ambient_minimal' | 'upbeat_fun') ||
+          'energetic_tech'
         const durationSec = typeof args.durationSec === 'number' ? args.durationSec : 30
         const bpm = typeof args.bpm === 'number' ? args.bpm : 120
         const autoInsertToTimeline =
@@ -216,7 +425,10 @@ export async function executeWebMCPTool(
     }
 
     if (result.success) {
-      agentStore.updateLogSuccess(logId, (result.data as Record<string, unknown>) || { status: 'ok' })
+      agentStore.updateLogSuccess(
+        logId,
+        (result.data as Record<string, unknown>) || { status: 'ok' },
+      )
     } else {
       agentStore.updateLogFailure(logId, result.error || 'Failed')
     }

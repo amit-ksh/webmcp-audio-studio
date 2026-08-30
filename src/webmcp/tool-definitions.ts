@@ -12,6 +12,100 @@ export const WEBMCP_TOOLS: WebMCPToolDefinition[] = [
     },
   },
   {
+    name: 'list_video_assets',
+    description:
+      'Discover and list all local video assets currently available in the project media library with their basic dimensions and durations.',
+    readOnlyHint: true,
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_video_metadata',
+    description:
+      'Inspect detailed technical metadata of a specific video asset, including dimensions, duration, frame rate, mime type, size, and audio track status.',
+    readOnlyHint: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        assetId: {
+          type: 'string',
+          description: 'The unique ID of the target video asset.',
+        },
+      },
+      required: ['assetId'],
+    },
+  },
+  {
+    name: 'get_video_asset',
+    description:
+      'Resolve a structured local reference for an uploaded video asset (returns asset metadata and storage reference, not raw binary).',
+    readOnlyHint: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        assetId: {
+          type: 'string',
+          description: 'The unique ID of the target video asset.',
+        },
+      },
+      required: ['assetId'],
+    },
+  },
+  {
+    name: 'extract_video_audio',
+    description:
+      'Extract the audio soundtrack locally from a video asset into a 16-bit PCM WAV audio asset, making it available for editing, playback, and Whisper transcription.',
+    readOnlyHint: false,
+    parameters: {
+      type: 'object',
+      properties: {
+        assetId: {
+          type: 'string',
+          description: 'The unique ID of the target video asset to extract audio from.',
+        },
+      },
+      required: ['assetId'],
+    },
+  },
+  {
+    name: 'get_video_transcript',
+    description:
+      'Retrieve an existing speech-to-text transcript associated with a video asset or its extracted audio. If none exists, returns a structured error instructing to run transcription.',
+    readOnlyHint: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        assetId: {
+          type: 'string',
+          description: 'The unique ID of the target video asset.',
+        },
+      },
+      required: ['assetId'],
+    },
+  },
+  {
+    name: 'get_video_frame',
+    description:
+      'Capture an image frame snapshot from a video asset at a specific timestamp using browser Canvas rendering.',
+    readOnlyHint: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        assetId: {
+          type: 'string',
+          description: 'The unique ID of the target video asset.',
+        },
+        timeSec: {
+          type: 'number',
+          description: 'Timestamp in seconds at which to capture the frame. Defaults to 0.',
+        },
+      },
+      required: ['assetId'],
+    },
+  },
+  {
     name: 'transcribe_audio_asset',
     description:
       'Run in-browser Whisper Speech-to-Text inference on a specific audio asset to produce timestamped transcription segments.',

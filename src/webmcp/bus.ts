@@ -3,6 +3,7 @@ import { saveAsset, deleteAsset } from '../storage/indexed-db'
 import { audioEngine } from '../audio/engine'
 import { getAudioContext } from '../audio/audio-context'
 import { cacheAudioBuffer, removeAudioBufferFromCache } from '../audio/audio-buffer-pool'
+import { videoService } from '../features/video/services/video-service'
 import type { AudioAsset, DuckingConfig, Clip } from '../contracts/project'
 import type { CommandResult } from '../contracts/audio'
 import { generateId, formatTime } from '../lib/utils'
@@ -14,6 +15,10 @@ export type StudioCommand =
   | { type: 'project.rename'; payload: { name: string } }
   | { type: 'asset.import'; payload: { file: File } }
   | { type: 'asset.delete'; payload: { assetId: string } }
+  | { type: 'video.import'; payload: { file: File } }
+  | { type: 'video.delete'; payload: { videoAssetId: string } }
+  | { type: 'video.extractAudio'; payload: { videoAssetId: string } }
+  | { type: 'video.getFrame'; payload: { videoAssetId: string; timeSec: number } }
   | {
       type: 'timeline.addClip'
       payload: {
@@ -128,6 +133,49 @@ class CommandBus {
           removeAudioBufferFromCache(assetId)
           store.removeAsset(assetId)
           return { success: true, message: `Deleted asset ${assetId}` }
+        }
+
+        case 'video.import': {
+          const video = await videoService.importVideo(command.payload.file)
+          return {
+            success: true,
+            message: `Imported video asset "${video.name}" (${video.metadata.width}x${video.metadata.height}, ${formatTime(video.durationSec)})`,
+            data: video,
+          }
+        }
+
+        case 'video.delete': {
+          await videoService.deleteVideo(command.payload.videoAssetId)
+          return {
+            success: true,
+            message: `Deleted video asset ${command.payload.videoAssetId}`,
+          }
+        }
+
+        case 'video.extractAudio': {
+          const audioAsset = await videoService.extractAudioFromVideo(command.payload.videoAssetId)
+          return {
+            success: true,
+            message: `Extracted audio from video (${formatTime(audioAsset.durationSec)})`,
+            data: {
+              videoAssetId: command.payload.videoAssetId,
+              audioAssetId: audioAsset.id,
+              durationSec: audioAsset.durationSec,
+              audioAsset,
+            },
+          }
+        }
+
+        case 'video.getFrame': {
+          const frame = await videoService.captureVideoFrame(
+            command.payload.videoAssetId,
+            command.payload.timeSec,
+          )
+          return {
+            success: true,
+            message: `Captured video frame at ${formatTime(frame.timeSec)} (${frame.width}x${frame.height})`,
+            data: frame,
+          }
         }
 
         case 'timeline.addClip': {
