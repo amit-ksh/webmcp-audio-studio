@@ -69,68 +69,120 @@ class AudioEngine {
     this.isPlaying = true
     masterGain.gain.setValueAtTime(project.masterGain, ctx.currentTime)
 
-    // Preload audio buffers and schedule clips
-    const allClips: { clip: Clip; trackMuted: boolean; trackGain: number; trackType: string }[] = []
+    // Build Sub-Buses
+    const voiceBus = ctx.createGain()
+    const musicBus = ctx.createGain()
+    const musicDuckingGain = ctx.createGain()
+    const sfxBus = ctx.createGain()
+
+    voiceBus.connect(masterGain)
+    musicBus.connect(musicDuckingGain)
+    musicDuckingGain.connect(masterGain)
+    sfxBus.connect(masterGain)
+
+    // Collect Speech Intervals for Dynamic Sidechain Ducking
+    const voiceIntervals: { start: number; end: number }[] = []
     for (const track of project.tracks) {
-      if (track.muted) continue
-      for (const clip of track.clips) {
-        allClips.push({
-          clip,
-          trackMuted: track.muted,
-          trackGain: track.gain,
-          trackType: track.type,
-        })
+      if (track.type === 'voiceover' && !track.muted) {
+        for (const clip of track.clips) {
+          voiceIntervals.push({
+            start: clip.startSec,
+            end: clip.startSec + clip.durationSec,
+          })
+        }
       }
     }
 
     const now = ctx.currentTime
 
-    for (const item of allClips) {
-      const { clip, trackGain } = item
-      const clipStart = clip.startSec
-      const clipEnd = clip.startSec + clip.durationSec
+    // Apply Live Sidechain Ducking Gain Automation to Music Bus
+    musicDuckingGain.gain.setValueAtTime(1.0, now)
+    if (project.ducking?.enabled && voiceIntervals.length > 0) {
+      const duckGainLinear = Math.pow(10, project.ducking.duckingAmountDb / 20)
+      const attack = project.ducking.attackSec || 0.05
+      const release = project.ducking.releaseSec || 0.3
 
-      // If playhead has passed this clip, skip it
-      if (offset >= clipEnd) continue
+      voiceIntervals.sort((a, b) => a.start - b.start)
 
-      try {
-        const audioBuffer = await getDecodedAudioBuffer(clip.assetId)
-        if (!this.isPlaying) return // stopped during async decode
+      for (const interval of voiceIntervals) {
+        const duckStartRelative = interval.start - offset
+        const duckEndRelative = interval.end - offset
 
-        const source = ctx.createBufferSource()
-        source.buffer = audioBuffer
+        if (duckEndRelative < 0) continue // Speech already passed
 
-        const clipGain = ctx.createGain()
-        const effectiveGain = (clip.gain ?? 1.0) * trackGain
-        clipGain.gain.setValueAtTime(effectiveGain, now)
+        const rampDownTime = Math.max(now, now + duckStartRelative - attack)
+        const duckFullTime = Math.max(now, now + duckStartRelative)
+        const holdEndTime = Math.max(now, now + duckEndRelative)
+        const recoverTime = holdEndTime + release
 
-        source.connect(clipGain)
-        clipGain.connect(masterGain)
-
-        // Calculate schedule timing
-        let whenToPlay: number
-        let bufferOffset: number
-        let playDuration: number
-
-        if (offset <= clipStart) {
-          // Play in the future
-          whenToPlay = now + (clipStart - offset)
-          bufferOffset = clip.offsetSec || 0
-          playDuration = Math.min(clip.durationSec, audioBuffer.duration - bufferOffset)
+        if (duckStartRelative <= 0 && duckEndRelative > 0) {
+          // Already in middle of speech
+          musicDuckingGain.gain.setValueAtTime(duckGainLinear, now)
+          musicDuckingGain.gain.setValueAtTime(duckGainLinear, holdEndTime)
+          musicDuckingGain.gain.linearRampToValueAtTime(1.0, recoverTime)
         } else {
-          // Play immediately from middle of clip
-          whenToPlay = now
-          const elapsedInClip = offset - clipStart
-          bufferOffset = (clip.offsetSec || 0) + elapsedInClip
-          playDuration = Math.max(0, clip.durationSec - elapsedInClip)
+          // Speech starts in future
+          musicDuckingGain.gain.setValueAtTime(1.0, rampDownTime)
+          musicDuckingGain.gain.linearRampToValueAtTime(duckGainLinear, duckFullTime)
+          musicDuckingGain.gain.setValueAtTime(duckGainLinear, holdEndTime)
+          musicDuckingGain.gain.linearRampToValueAtTime(1.0, recoverTime)
         }
+      }
+    }
 
-        if (playDuration > 0 && bufferOffset < audioBuffer.duration) {
-          source.start(whenToPlay, bufferOffset, playDuration)
-          this.activeSources.push({ source, gainNode: clipGain, clip })
+    // Schedule All Clips across tracks
+    for (const track of project.tracks) {
+      if (track.muted) continue
+
+      const targetBus =
+        track.type === 'voiceover'
+          ? voiceBus
+          : track.type === 'music'
+            ? musicBus
+            : sfxBus
+
+      for (const clip of track.clips) {
+        const clipStart = clip.startSec
+        const clipEnd = clip.startSec + clip.durationSec
+
+        if (offset >= clipEnd) continue
+
+        try {
+          const audioBuffer = await getDecodedAudioBuffer(clip.assetId)
+          if (!this.isPlaying) return
+
+          const source = ctx.createBufferSource()
+          source.buffer = audioBuffer
+
+          const clipGain = ctx.createGain()
+          const effectiveGain = (clip.gain ?? 1.0) * track.gain
+          clipGain.gain.setValueAtTime(effectiveGain, now)
+
+          source.connect(clipGain)
+          clipGain.connect(targetBus)
+
+          let whenToPlay: number
+          let bufferOffset: number
+          let playDuration: number
+
+          if (offset <= clipStart) {
+            whenToPlay = now + (clipStart - offset)
+            bufferOffset = clip.offsetSec || 0
+            playDuration = Math.min(clip.durationSec, audioBuffer.duration - bufferOffset)
+          } else {
+            whenToPlay = now
+            const elapsedInClip = offset - clipStart
+            bufferOffset = (clip.offsetSec || 0) + elapsedInClip
+            playDuration = Math.max(0, clip.durationSec - elapsedInClip)
+          }
+
+          if (playDuration > 0 && bufferOffset < audioBuffer.duration) {
+            source.start(whenToPlay, bufferOffset, playDuration)
+            this.activeSources.push({ source, gainNode: clipGain, clip })
+          }
+        } catch (err) {
+          console.warn(`Failed to schedule clip ${clip.name}:`, err)
         }
-      } catch (err) {
-        console.warn(`Failed to play clip ${clip.name}:`, err)
       }
     }
 
@@ -183,7 +235,7 @@ class AudioEngine {
         item.source.disconnect()
         item.gainNode.disconnect()
       } catch {
-        // Already stopped/disconnected
+        // Ignored
       }
     }
     this.activeSources = []
@@ -216,13 +268,12 @@ class AudioEngine {
   }
 
   /**
-   * Offline Multi-Track Mix Render
+   * Offline Multi-Track Mixdown Render with Sample-Accurate Sidechain Ducking
    */
   public async renderProjectToAudioBuffer(
     project: Project,
     sampleRate = 44100,
   ): Promise<AudioBuffer> {
-    // Calculate total duration from clips
     let maxClipEnd = 0
     for (const track of project.tracks) {
       for (const clip of track.clips) {
@@ -237,7 +288,7 @@ class AudioEngine {
     masterGain.gain.setValueAtTime(project.masterGain, 0)
     masterGain.connect(offlineCtx.destination)
 
-    // Collect speech intervals for ducking
+    // Voice intervals for ducking
     const voiceIntervals: { start: number; end: number }[] = []
     for (const track of project.tracks) {
       if (track.type === 'voiceover' && !track.muted) {
@@ -262,7 +313,6 @@ class AudioEngine {
         const attack = project.ducking.attackSec || 0.05
         const release = project.ducking.releaseSec || 0.3
 
-        // Sort intervals
         voiceIntervals.sort((a, b) => a.start - b.start)
 
         for (const interval of voiceIntervals) {

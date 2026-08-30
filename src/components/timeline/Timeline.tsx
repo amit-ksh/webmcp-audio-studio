@@ -7,8 +7,18 @@ import { formatTime, formatDb } from '../../lib/utils'
 import type { Clip, TrackType } from '../../contracts/project'
 
 export const Timeline: React.FC = () => {
-  const { currentProject, setTrackGain, toggleTrackMute, toggleTrackSolo, addTrack, removeTrack, updateClip, removeClip, selectClip, selectedClipId } =
-    useProjectStore()
+  const {
+    currentProject,
+    setTrackGain,
+    toggleTrackMute,
+    toggleTrackSolo,
+    addTrack,
+    removeTrack,
+    updateClip,
+    removeClip,
+    selectClip,
+    selectedClipId,
+  } = useProjectStore()
   const { currentTime, zoom, setCurrentTime } = usePlaybackStore()
   const timelineRef = useRef<HTMLDivElement | null>(null)
   const [draggingClipId, setDraggingClipId] = useState<string | null>(null)
@@ -25,7 +35,7 @@ export const Timeline: React.FC = () => {
   const durationSec = Math.max(currentProject.durationSec, 60)
   const totalWidthPx = durationSec * zoom
 
-  // Handle Timeline Scrubbing (Clicking on Ruler or Track Lane)
+  // Timeline scrub / seek
   const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (draggingClipId) return
     const rect = e.currentTarget.getBoundingClientRect()
@@ -35,7 +45,7 @@ export const Timeline: React.FC = () => {
     audioEngine.seek(targetSec, currentProject)
   }
 
-  // Clip Dragging logic
+  // Clip drag repositioning
   const handleClipMouseDown = (e: React.MouseEvent, clip: Clip) => {
     e.stopPropagation()
     selectClip(clip.id)
@@ -59,6 +69,27 @@ export const Timeline: React.FC = () => {
     window.addEventListener('mouseup', handleMouseUp)
   }
 
+  // Right trim handle drag
+  const handleTrimRightMouseDown = (e: React.MouseEvent, clip: Clip) => {
+    e.stopPropagation()
+    const initialDuration = clip.durationSec
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - e.clientX
+      const deltaSec = deltaX / zoom
+      const newDuration = Math.max(0.5, initialDuration + deltaSec)
+      updateClip(clip.id, { durationSec: parseFloat(newDuration.toFixed(2)) })
+    }
+
+    const handleMouseUp = () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+  }
+
   const getTrackIcon = (type: TrackType) => {
     switch (type) {
       case 'voiceover':
@@ -73,11 +104,21 @@ export const Timeline: React.FC = () => {
   const getClipColor = (trackType: TrackType) => {
     switch (trackType) {
       case 'voiceover':
-        return 'from-violet-950/80 to-purple-900/80 border-violet-500/60 text-violet-200'
+        return 'from-violet-950/90 to-purple-900/90 border-violet-500/70 text-violet-200 shadow-violet-950/50'
       case 'music':
-        return 'from-cyan-950/80 to-teal-900/80 border-cyan-500/60 text-cyan-200'
+        return 'from-cyan-950/90 to-teal-900/90 border-cyan-500/70 text-cyan-200 shadow-cyan-950/50'
       default:
-        return 'from-amber-950/80 to-orange-900/80 border-amber-500/60 text-amber-200'
+        return 'from-amber-950/90 to-orange-900/90 border-amber-500/70 text-amber-200 shadow-amber-950/50'
+    }
+  }
+
+  // Collect speech intervals for visual ducking zones
+  const voiceClips: { start: number; end: number }[] = []
+  for (const t of currentProject.tracks) {
+    if (t.type === 'voiceover' && !t.muted) {
+      for (const c of t.clips) {
+        voiceClips.push({ start: c.startSec, end: c.startSec + c.durationSec })
+      }
     }
   }
 
@@ -99,10 +140,15 @@ export const Timeline: React.FC = () => {
           style={{ minWidth: `${totalWidthPx + 220}px` }}
         >
           {/* Header spacer for track controls */}
-          <div className="w-56 bg-slate-900 h-full border-r border-slate-800 flex items-center px-3 sticky left-0 z-40">
+          <div className="w-56 bg-slate-900 h-full border-r border-slate-800 flex items-center justify-between px-3 sticky left-0 z-40">
             <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">
               Tracks ({currentProject.tracks.length})
             </span>
+            {currentProject.ducking?.enabled && (
+              <span className="text-[9px] font-mono text-amber-400 bg-amber-950/60 px-1 py-0.5 rounded border border-amber-500/30">
+                DUCK {currentProject.ducking.duckingAmountDb}dB
+              </span>
+            )}
           </div>
 
           {/* Time Ruler Ticks */}
@@ -171,7 +217,7 @@ export const Timeline: React.FC = () => {
                       title={`Track Gain: ${formatDb(track.gain)}`}
                     />
                   </div>
-                  <span className="text-[9px] font-mono text-slate-400 w-10 text-right">
+                  <span className="text-[9px] font-mono text-slate-400 w-9 text-right">
                     {formatDb(track.gain)}
                   </span>
                   <button
@@ -213,6 +259,24 @@ export const Timeline: React.FC = () => {
                   />
                 ))}
 
+                {/* Shaded Sidechain Ducking Visualizer on Music Tracks */}
+                {track.type === 'music' &&
+                  currentProject.ducking?.enabled &&
+                  voiceClips.map((vc, idx) => (
+                    <div
+                      key={idx}
+                      className="absolute top-0 bottom-0 bg-amber-500/10 border-l border-r border-amber-500/20 pointer-events-none z-0"
+                      style={{
+                        left: `${vc.start * zoom}px`,
+                        width: `${Math.max(10, (vc.end - vc.start) * zoom)}px`,
+                      }}
+                    >
+                      <span className="text-[8px] font-mono text-amber-400/70 p-1 block">
+                        Ducked ({currentProject.ducking.duckingAmountDb}dB)
+                      </span>
+                    </div>
+                  ))}
+
                 {/* Clips */}
                 {track.clips.map((clip) => {
                   const clipLeft = clip.startSec * zoom
@@ -230,7 +294,9 @@ export const Timeline: React.FC = () => {
                       className={`absolute top-2 bottom-2 rounded-md border bg-gradient-to-r ${getClipColor(
                         track.type,
                       )} p-2 flex flex-col justify-between cursor-move shadow-md select-none transition-all ${
-                        isSelected ? 'ring-2 ring-indigo-400 border-indigo-400 z-10' : 'hover:brightness-110'
+                        isSelected
+                          ? 'ring-2 ring-indigo-400 border-indigo-400 z-10'
+                          : 'hover:brightness-110'
                       }`}
                       style={{
                         left: `${clipLeft}px`,
@@ -241,20 +307,22 @@ export const Timeline: React.FC = () => {
                         <span className="text-[11px] font-bold font-mono truncate drop-shadow">
                           {clip.name}
                         </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            removeClip(clip.id)
-                          }}
-                          className="pointer-events-auto p-0.5 rounded hover:bg-rose-500 hover:text-white text-slate-400"
-                          title="Remove clip"
-                        >
-                          <Trash2 className="w-2.5 h-2.5" />
-                        </button>
+                        <div className="flex items-center gap-1 pointer-events-auto">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              removeClip(clip.id)
+                            }}
+                            className="p-0.5 rounded hover:bg-rose-500 hover:text-white text-slate-400 transition-colors"
+                            title="Remove clip"
+                          >
+                            <Trash2 className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
                       </div>
 
                       {/* Simulated Audio Waveform Bars */}
-                      <div className="flex items-center gap-[2px] h-5 overflow-hidden opacity-60 pointer-events-none">
+                      <div className="flex items-center gap-[2px] h-5 overflow-hidden opacity-65 pointer-events-none">
                         {Array.from({ length: Math.min(60, Math.floor(clipWidth / 4)) }).map(
                           (_, i) => {
                             const barHeight = Math.sin(i * 0.4) * 40 + 50
@@ -273,6 +341,13 @@ export const Timeline: React.FC = () => {
                         <span>{formatTime(clip.startSec)}</span>
                         <span>{formatTime(clip.durationSec)}</span>
                       </div>
+
+                      {/* Right Trim Handle */}
+                      <div
+                        onMouseDown={(e) => handleTrimRightMouseDown(e, clip)}
+                        className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/30 rounded-r-md transition-colors"
+                        title="Drag to trim duration"
+                      />
                     </div>
                   )
                 })}

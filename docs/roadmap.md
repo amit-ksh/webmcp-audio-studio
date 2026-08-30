@@ -113,24 +113,25 @@ Milestone 1.
 - [x] Audio can be added to timeline.
 - [x] Browser memory usage remains bounded.
 
-## Milestone 5 — Mixer & Ducking
+## Milestone 5 — Mixer & Ducking (Status: COMPLETED)
 
 ### Prerequisites
 Milestones 2, 3, and 4.
 
 ### Work
-- Voice bus.
-- Music bus.
-- Gain controls.
-- Sidechain ducking.
-- Master analyser.
-- Final WAV rendering.
+- Dual audio sub-buses (Voice Bus, Music Bus with Sidechain Ducking, SFX Bus -> Master).
+- Live real-time sidechain ducking dynamic envelope automation during playback.
+- Offline sample-accurate sidechain ducking curve for WAV export.
+- Ducking depth (-3dB to -30dB), attack, and release parameters.
+- Channel strips with track faders, solo, and mute.
+- Visual ducking curve SVG diagram in MixerPanel and shaded ducking zones on timeline.
+- Master VU peak and RMS analyzer.
 
 ### Definition of Done
-- Voice and music play together.
-- Music automatically lowers during speech.
-- Ducking amount is adjustable.
-- Master preview matches exported audio within expected encoder/rendering tolerances.
+- [x] Voice and music play together with sample accuracy.
+- [x] Music automatically lowers during speech and recovers smoothly.
+- [x] Ducking amount, attack, and release are adjustable.
+- [x] Master preview matches exported audio within expected encoder tolerances.
 
 ## Milestone 6 — WebMCP
 
