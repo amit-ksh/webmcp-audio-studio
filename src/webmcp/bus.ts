@@ -44,6 +44,7 @@ export type StudioCommand =
   | { type: 'mixer.setDucking'; payload: Partial<DuckingConfig> }
   | { type: 'project.mix'; payload: { duckingAmountDb?: number; masterGain?: number } }
   | { type: 'project.export'; payload: { format?: 'wav' } }
+  | { type: 'transcription.run'; payload: { assetId: string; language?: string } }
 
 class CommandBus {
   public async execute(command: StudioCommand): Promise<CommandResult> {
@@ -181,6 +182,19 @@ class CommandBus {
             success: true,
             message: `Rendered project WAV (${(blob.size / 1024 / 1024).toFixed(2)} MB)`,
             data: { blob, sizeBytes: blob.size, durationSec: project.durationSec },
+          }
+        }
+
+        case 'transcription.run': {
+          const { assetId, language = 'en' } = command.payload
+          const { transcriptionService } = await import(
+            '../features/transcription/transcription-service'
+          )
+          const transcript = await transcriptionService.transcribeAsset(assetId, language)
+          return {
+            success: true,
+            message: `Transcribed audio asset (${transcript.segments.length} segments)`,
+            data: transcript,
           }
         }
 

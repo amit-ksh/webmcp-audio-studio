@@ -48,27 +48,27 @@ Milestone 0.
 - [x] Clip can be positioned on timeline.
 - [x] Master WAV can be exported.
 
-## Milestone 2 — Speech-to-Text
+## Milestone 2 — Speech-to-Text (Status: COMPLETED)
 
 ### Prerequisites
 Milestone 1.
 
 ### Work
-- Whisper Web Worker.
-- Hugging Face Transformers.js.
-- WebGPU capability detection.
-- WASM fallback.
-- Progress reporting.
-- Cancellation.
-- Worker recovery.
+- Whisper Web Worker with `@huggingface/transformers`.
+- WebGPU detection with WASM fallback.
+- Audio downmix and 16kHz Float32 PCM conversion via `OfflineAudioContext`.
+- Chunked timestamped inference reporting progress.
+- Cancellation and error recovery.
+- Transcript viewer with click-to-seek, copy text, and "Send to Narration".
+- IndexedDB transcript persistence and Command Bus integration.
 
 ### Definition of Done
-- Supported audio can be transcribed without blocking the UI.
-- Transcript contains timestamps.
-- Progress is visible.
-- WebGPU is preferred when available.
-- WASM fallback works.
-- Worker failure does not corrupt project state.
+- [x] Supported audio can be transcribed without blocking the UI.
+- [x] Transcript contains timestamps.
+- [x] Progress is visible.
+- [x] WebGPU is preferred when available.
+- [x] WASM fallback works.
+- [x] Worker failure does not corrupt project state.
 
 ## Milestone 3 — Text-to-Speech
 
