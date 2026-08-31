@@ -137,6 +137,11 @@ export async function saveVideoAsset(meta: VideoAsset, data: Blob | ArrayBuffer)
   ])
 }
 
+export async function saveVideoAssetMeta(meta: VideoAsset): Promise<void> {
+  const db = await getDB()
+  await db.put('video_assets_meta', meta)
+}
+
 export async function getVideoAssetMeta(id: string): Promise<VideoAsset | undefined> {
   const db = await getDB()
   return db.get('video_assets_meta', id)

@@ -22,6 +22,10 @@ export const VideoAssetSchema = z.object({
   metadata: VideoMetadataSchema,
   thumbnailDataUrl: z.string().optional(),
   associatedAudioAssetId: z.string().optional(),
+  transcriptionStatus: z
+    .enum(['idle', 'extracting', 'transcribing', 'completed', 'unavailable', 'failed'])
+    .default('idle'),
+  transcriptionError: z.string().optional(),
 })
 export type VideoAsset = z.infer<typeof VideoAssetSchema>
 

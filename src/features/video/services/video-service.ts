@@ -1,5 +1,6 @@
 import {
   saveVideoAsset,
+  saveVideoAssetMeta,
   getVideoAssetMeta,
   getVideoAssetBlob,
   deleteVideoAsset,
@@ -157,6 +158,7 @@ class VideoService {
       createdAt: Date.now(),
       metadata,
       thumbnailDataUrl,
+      transcriptionStatus: 'idle',
     }
 
     // Persist to IndexedDB
@@ -166,6 +168,26 @@ class VideoService {
     useVideoStore.getState().addVideo(videoAsset)
 
     return videoAsset
+  }
+
+  public async updateTranscriptionState(
+    videoAssetId: string,
+    patch: Pick<VideoAsset, 'transcriptionStatus'> &
+      Partial<Pick<VideoAsset, 'transcriptionError' | 'associatedAudioAssetId'>>,
+  ): Promise<VideoAsset> {
+    const videoMeta = await getVideoAssetMeta(videoAssetId)
+    if (!videoMeta) {
+      throw new Error(`Video metadata not found: ${videoAssetId}`)
+    }
+
+    const updatedVideo: VideoAsset = {
+      ...videoMeta,
+      ...patch,
+    }
+
+    await saveVideoAssetMeta(updatedVideo)
+    useVideoStore.getState().updateVideo(videoAssetId, patch)
+    return updatedVideo
   }
 
   /**
@@ -233,7 +255,7 @@ class VideoService {
       ...videoMeta,
       associatedAudioAssetId: audioAssetId,
     }
-    await saveVideoAsset(updatedVideo, blob)
+    await saveVideoAssetMeta(updatedVideo)
     useVideoStore.getState().updateVideo(videoAssetId, { associatedAudioAssetId: audioAssetId })
 
     return audioAsset

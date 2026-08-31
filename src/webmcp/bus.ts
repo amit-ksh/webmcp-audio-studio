@@ -137,10 +137,46 @@ class CommandBus {
 
         case 'video.import': {
           const video = await videoService.importVideo(command.payload.file)
+          let importedVideo = video
+          let transcriptWarning: string | undefined
+
+          try {
+            importedVideo = await videoService.updateTranscriptionState(video.id, {
+              transcriptionStatus: 'extracting',
+              transcriptionError: undefined,
+            })
+
+            const audioAsset = await videoService.extractAudioFromVideo(video.id)
+            importedVideo = await videoService.updateTranscriptionState(video.id, {
+              transcriptionStatus: 'transcribing',
+              associatedAudioAssetId: audioAsset.id,
+            })
+
+            const { transcriptionService } = await import(
+              '../features/transcription/transcription-service'
+            )
+            await transcriptionService.transcribeAsset(audioAsset.id, 'en')
+
+            importedVideo = await videoService.updateTranscriptionState(video.id, {
+              transcriptionStatus: 'completed',
+              associatedAudioAssetId: audioAsset.id,
+              transcriptionError: undefined,
+            })
+          } catch (error: unknown) {
+            transcriptWarning = error instanceof Error ? error.message : String(error)
+            const extractionFailed = !importedVideo.associatedAudioAssetId
+            importedVideo = await videoService.updateTranscriptionState(video.id, {
+              transcriptionStatus: extractionFailed ? 'unavailable' : 'failed',
+              transcriptionError: transcriptWarning,
+            })
+          }
+
           return {
             success: true,
-            message: `Imported video asset "${video.name}" (${video.metadata.width}x${video.metadata.height}, ${formatTime(video.durationSec)})`,
-            data: video,
+            message: transcriptWarning
+              ? `Imported video "${video.name}". Audio transcript was unavailable: ${transcriptWarning}`
+              : `Imported video "${video.name}" with an extracted audio transcript`,
+            data: importedVideo,
           }
         }
 

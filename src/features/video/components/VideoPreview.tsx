@@ -1,5 +1,5 @@
 import React from 'react'
-import { ArrowLeft, Play, Pause, Film } from 'lucide-react'
+import { RefreshCw, Play, Pause, Film, FileText, Loader2 } from 'lucide-react'
 import { useVideoStore } from '../../../stores/video-store'
 import { usePlaybackStore } from '../../../stores/playback-store'
 import { useProjectStore } from '../../../stores/project-store'
@@ -8,10 +8,15 @@ import { PlaybackControls } from '../../../components/studio/PlaybackControls'
 
 interface VideoPreviewProps {
   videoRef: React.RefObject<HTMLVideoElement | null>
-  onNewVideo: () => void
+  onChangeVideo: () => void
+  isChangingVideo?: boolean
 }
 
-export const VideoPreview: React.FC<VideoPreviewProps> = ({ videoRef, onNewVideo }) => {
+export const VideoPreview: React.FC<VideoPreviewProps> = ({
+  videoRef,
+  onChangeVideo,
+  isChangingVideo = false,
+}) => {
   const {
     videos,
     selectedVideoId,
@@ -70,12 +75,17 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ videoRef, onNewVideo
         <div className="flex items-center gap-2.5 min-w-0">
           <button
             type="button"
-            onClick={onNewVideo}
+            onClick={onChangeVideo}
+            disabled={isChangingVideo}
             className="btn btn-secondary text-[11px] py-1 px-2 rounded text-slate-600 hover:text-slate-900 flex items-center gap-1"
-            title="Change video"
+            title="Choose a different video file"
           >
-            <ArrowLeft className="w-3 h-3" />
-            <span>Change</span>
+            {isChangingVideo ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3 h-3" />
+            )}
+            <span>{isChangingVideo ? 'Importing' : 'Change'}</span>
           </button>
 
           <div className="flex items-center gap-1.5 text-xs text-slate-700 min-w-0">
@@ -88,6 +98,12 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ videoRef, onNewVideo
 
         {/* Right: Subtle Metadata */}
         <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+          {activeVideo.transcriptionStatus === 'completed' && (
+            <span className="flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-sans font-medium text-emerald-700">
+              <FileText className="h-3 w-3" />
+              Transcript ready
+            </span>
+          )}
           <span>{activeVideo.metadata.width}×{activeVideo.metadata.height}</span>
           <span>•</span>
           <span>{activeVideo.metadata.frameRate || 30} fps</span>

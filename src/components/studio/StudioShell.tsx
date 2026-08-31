@@ -11,9 +11,14 @@ import { MusicPanel } from '../../features/music/MusicPanel'
 import { ExportModal } from './ExportModal'
 import { WebMCPModal } from './WebMCPModal'
 import { registerWebMCPTools } from '../../webmcp/register-tools'
+import { commandBus } from '../../webmcp/bus'
+import { AlertCircle } from 'lucide-react'
 
 export const StudioShell: React.FC = () => {
-  const { initStore: initProjectStore } = useProjectStore()
+  const {
+    initStore: initProjectStore,
+    updateProjectMeta,
+  } = useProjectStore()
   const {
     videos,
     selectedVideoId,
@@ -26,8 +31,11 @@ export const StudioShell: React.FC = () => {
   const [isMusicOpen, setIsMusicOpen] = useState(false)
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isWebMCPOpen, setIsWebMCPOpen] = useState(false)
+  const [isChangingVideo, setIsChangingVideo] = useState(false)
+  const [videoChangeError, setVideoChangeError] = useState<string | null>(null)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const videoInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     initProjectStore()
@@ -42,8 +50,44 @@ export const StudioShell: React.FC = () => {
     await selectVideo(null)
   }
 
+  const handleVideoFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    setIsChangingVideo(true)
+    setVideoChangeError(null)
+
+    try {
+      const result = await commandBus.execute({
+        type: 'video.import',
+        payload: { file },
+      })
+
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to import the selected video')
+      }
+
+      const video = result.data as { id: string; durationSec: number }
+      await selectVideo(video.id)
+      updateProjectMeta({ durationSec: Math.ceil(video.durationSec || 60) })
+    } catch (error: unknown) {
+      setVideoChangeError(error instanceof Error ? error.message : String(error))
+    } finally {
+      setIsChangingVideo(false)
+    }
+  }
+
   return (
     <div className="studio-container">
+      <input
+        ref={videoInputRef}
+        type="file"
+        accept="video/*,.mp4,.webm,.mov,.mkv,.ogg,.avi,.m4v"
+        className="hidden"
+        onChange={handleVideoFileChange}
+      />
+
       {/* Top Application Header */}
       <StudioHeader
         onNewVideo={handleResetVideo}
@@ -59,11 +103,19 @@ export const StudioShell: React.FC = () => {
       ) : (
         /* Unified Studio Editor Surface */
         <main className="w-full">
+          {videoChangeError && (
+            <div className="mb-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+              <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+              <span>{videoChangeError}</span>
+            </div>
+          )}
+
           <div className="editor-surface">
             {/* 1. Video / Project Header & Video Preview Canvas */}
             <VideoPreview
               videoRef={videoRef}
-              onNewVideo={handleResetVideo}
+              onChangeVideo={() => videoInputRef.current?.click()}
+              isChangingVideo={isChangingVideo}
             />
 
             {/* 2. Timeline */}
