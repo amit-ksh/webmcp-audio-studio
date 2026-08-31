@@ -1,9 +1,10 @@
 import React from 'react'
-import { ArrowLeft, Play, Pause } from 'lucide-react'
+import { ArrowLeft, Play, Pause, Film } from 'lucide-react'
 import { useVideoStore } from '../../../stores/video-store'
 import { usePlaybackStore } from '../../../stores/playback-store'
 import { useProjectStore } from '../../../stores/project-store'
 import { audioEngine } from '../../../audio/engine'
+import { PlaybackControls } from '../../../components/studio/PlaybackControls'
 
 interface VideoPreviewProps {
   videoRef: React.RefObject<HTMLVideoElement | null>
@@ -62,31 +63,40 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ videoRef, onNewVideo
   }
 
   return (
-    <div className="flex flex-col gap-2 w-full">
-      {/* Top Bar: New video action & metadata */}
-      <div className="flex items-center justify-between text-xs">
-        <button
-          type="button"
-          onClick={onNewVideo}
-          className="btn btn-ghost text-xs py-1 px-2 -ml-2 text-slate-400 hover:text-white flex items-center gap-1.5"
-          style={{ color: 'var(--muted-foreground)' }}
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>New video</span>
-        </button>
+    <div className="studio-card p-4 flex flex-col gap-3 w-full">
+      {/* Video Card Header Bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onNewVideo}
+            className="btn btn-secondary text-xs py-1 px-2.5 flex items-center gap-1.5"
+            title="Change or upload a different video"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Change video</span>
+          </button>
 
-        <div className="flex items-center gap-2 text-[11px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
-          <span>{activeVideo.metadata.width}×{activeVideo.metadata.height}</span>
-          <span>•</span>
-          <span>{activeVideo.metadata.frameRate || 30} fps</span>
-          <span>•</span>
-          <span className="truncate max-w-[140px]">{activeVideo.name}</span>
+          <div className="flex items-center gap-1.5 ml-1 text-xs font-semibold truncate max-w-xs" style={{ color: 'var(--foreground)' }}>
+            <Film className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+            <span className="truncate">{activeVideo.name}</span>
+          </div>
+        </div>
+
+        {/* Video Specs Badges */}
+        <div className="flex items-center gap-1.5 text-[11px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+          <span className="px-2 py-0.5 rounded-md" style={{ backgroundColor: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+            {activeVideo.metadata.width}×{activeVideo.metadata.height}
+          </span>
+          <span className="px-2 py-0.5 rounded-md" style={{ backgroundColor: 'var(--surface-elevated)', border: '1px solid var(--border)' }}>
+            {activeVideo.metadata.frameRate || 30} fps
+          </span>
         </div>
       </div>
 
       {/* Video Viewport Container */}
       <div
-        className="relative aspect-video w-full bg-black rounded-md overflow-hidden flex items-center justify-center group shadow-md"
+        className="relative aspect-video w-full bg-black rounded-xl overflow-hidden flex items-center justify-center group shadow-inner"
         style={{ border: '1px solid var(--border)' }}
       >
         <video
@@ -100,24 +110,30 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ videoRef, onNewVideo
           className="w-full h-full object-contain cursor-pointer"
         />
 
-        {/* Center Play/Pause button on hover */}
+        {/* Center Hover Play/Pause Overlay */}
         <button
           type="button"
           onClick={togglePlay}
-          className="absolute inset-0 m-auto w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-90 hover:scale-105 transition-all shadow-md"
+          className="absolute inset-0 m-auto w-14 h-14 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-95 hover:scale-110 transition-all shadow-xl backdrop-blur-sm"
           style={{
-            backgroundColor: 'rgba(11, 13, 17, 0.75)',
+            backgroundColor: 'rgba(13, 15, 20, 0.8)',
             border: '1px solid var(--border)',
             color: 'var(--foreground)',
           }}
         >
           {isPlaying || isAudioPlaying ? (
-            <Pause className="w-5 h-5 fill-current" />
+            <Pause className="w-6 h-6 fill-current" />
           ) : (
-            <Play className="w-5 h-5 fill-current ml-0.5" />
+            <Play className="w-6 h-6 fill-current ml-0.5 text-blue-400" />
           )}
         </button>
       </div>
+
+      {/* Integrated Transport Controls Bar */}
+      <PlaybackControls
+        videoRef={videoRef}
+        durationSec={activeVideo?.durationSec || currentProject?.durationSec || 60}
+      />
     </div>
   )
 }

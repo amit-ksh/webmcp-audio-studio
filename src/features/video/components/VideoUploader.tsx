@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { Upload, Loader2, AlertCircle } from 'lucide-react'
+import { Upload, Loader2, AlertCircle, Video } from 'lucide-react'
 import { commandBus } from '../../../webmcp/bus'
 import { useVideoStore } from '../../../stores/video-store'
 import { useProjectStore } from '../../../stores/project-store'
@@ -51,7 +51,16 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({ onUploaded }) => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center flex-1 py-12 px-4">
+    <div className="flex flex-col items-center justify-center flex-1 py-16 px-4">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="video/*,.mp4,.webm,.mov,.mkv,.ogg"
+        style={{ display: 'none' }}
+        onChange={(e) => handleFiles(e.target.files)}
+      />
+
       <div
         onDragOver={(e) => {
           e.preventDefault()
@@ -59,60 +68,70 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({ onUploaded }) => {
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className="w-full max-w-md p-10 text-center transition-all duration-150 flex flex-col items-center justify-center gap-4"
+        onClick={() => !isImporting && fileInputRef.current?.click()}
+        className={`studio-card w-full max-w-lg p-12 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-5 ${
+          isDragging ? 'scale-[1.01] ring-2 ring-blue-500' : 'hover:border-blue-500/40'
+        }`}
         style={{
-          border: `2px dashed ${isDragging ? 'var(--accent)' : 'var(--border)'}`,
-          borderRadius: 'var(--radius-lg)',
-          backgroundColor: isDragging ? 'var(--surface-hover)' : 'var(--surface)',
+          borderStyle: 'dashed',
+          borderWidth: '2px',
+          borderColor: isDragging ? 'var(--accent)' : 'var(--border)',
         }}
       >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="video/*,.mp4,.webm,.mov,.mkv,.ogg"
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-        />
-
         {isImporting ? (
-          <div className="flex flex-col items-center gap-2 py-4">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--accent)' }} />
-            <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-              Importing video…
+          <div className="flex flex-col items-center gap-3 py-6">
+            <Loader2 className="w-9 h-9 animate-spin text-blue-500" />
+            <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+              Ingesting video & extracting audio…
             </p>
+            <span className="text-xs font-mono" style={{ color: 'var(--muted-foreground)' }}>
+              Decoding frames & audio waveform in browser
+            </span>
           </div>
         ) : (
           <>
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ background: 'var(--surface-elevated)', color: 'var(--muted-foreground)' }}
+              className="w-14 h-14 rounded-2xl flex items-center justify-center transition-transform hover:scale-105"
+              style={{
+                backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                color: 'var(--accent)',
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+              }}
             >
-              <Upload className="w-5 h-5" />
+              <Video className="w-6 h-6" />
             </div>
 
-            <div className="flex flex-col gap-1">
-              <h2 className="text-base font-semibold" style={{ color: 'var(--foreground)' }}>
+            <div className="flex flex-col gap-1.5">
+              <h2 className="text-lg font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>
                 Upload a video
               </h2>
               <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                Drag & drop your video here
+                Drag & drop your video here to start editing
               </p>
             </div>
 
-            <span className="text-xs font-mono" style={{ color: 'var(--muted-foreground)' }}>
-              or
-            </span>
+            <div className="flex items-center gap-3 w-full max-w-xs">
+              <div className="h-[1px] flex-1" style={{ backgroundColor: 'var(--border)' }} />
+              <span className="text-[11px] font-mono uppercase tracking-wider" style={{ color: 'var(--muted-foreground)' }}>
+                or
+              </span>
+              <div className="h-[1px] flex-1" style={{ backgroundColor: 'var(--border)' }} />
+            </div>
 
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="btn btn-secondary text-xs px-4 py-2"
+              onClick={(e) => {
+                e.stopPropagation()
+                fileInputRef.current?.click()
+              }}
+              className="btn btn-primary text-xs px-5 py-2.5 rounded-xl shadow-md"
             >
-              Choose video
+              <Upload className="w-4 h-4" />
+              <span>Choose video</span>
             </button>
 
-            <span className="text-[11px] font-mono mt-1" style={{ color: 'var(--muted-foreground)' }}>
-              MP4, WebM, MOV
+            <span className="text-[11px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+              MP4 • WebM • MOV
             </span>
           </>
         )}
@@ -120,9 +139,9 @@ export const VideoUploader: React.FC<VideoUploaderProps> = ({ onUploaded }) => {
 
       {errorMessage && (
         <div
-          className="mt-4 p-3 rounded-md text-xs flex items-center gap-2 max-w-md w-full"
+          className="mt-4 p-3 rounded-xl text-xs flex items-center gap-2 max-w-lg w-full"
           style={{
-            background: 'rgba(239, 68, 68, 0.1)',
+            background: 'rgba(239, 68, 68, 0.12)',
             border: '1px solid rgba(239, 68, 68, 0.25)',
             color: 'var(--danger)',
           }}

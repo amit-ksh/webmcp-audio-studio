@@ -5,7 +5,6 @@ import { useVideoStore } from '../../stores/video-store'
 import { StudioHeader } from './StudioHeader'
 import { VideoUploader } from '../../features/video/components/VideoUploader'
 import { VideoPreview } from '../../features/video/components/VideoPreview'
-import { PlaybackControls } from './PlaybackControls'
 import { Timeline } from '../timeline/Timeline'
 import { AudioControls } from './AudioControls'
 import { VoiceoverPanel } from '../../features/voiceover/VoiceoverPanel'
@@ -14,10 +13,7 @@ import { ExportModal } from './ExportModal'
 import { registerWebMCPTools } from '../../webmcp/register-tools'
 
 export const StudioShell: React.FC = () => {
-  const {
-    currentProject,
-    initStore: initProjectStore,
-  } = useProjectStore()
+  const { initStore: initProjectStore } = useProjectStore()
   const {
     videos,
     selectedVideoId,
@@ -57,16 +53,10 @@ export const StudioShell: React.FC = () => {
       ) : (
         /* Section 5 to 11: Video & Audio Studio Workspace */
         <main className="flex flex-col gap-4 w-full pb-8">
-          {/* Video Preview */}
+          {/* Video Preview with Integrated Playback Controls */}
           <VideoPreview
             videoRef={videoRef}
             onNewVideo={handleResetVideo}
-          />
-
-          {/* Minimal Playback Controls */}
-          <PlaybackControls
-            videoRef={videoRef}
-            durationSec={activeVideo?.durationSec || currentProject?.durationSec || 60}
           />
 
           {/* Timeline */}
