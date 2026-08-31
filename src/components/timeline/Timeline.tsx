@@ -50,7 +50,7 @@ export const Timeline: React.FC = () => {
   return (
     <div className="flex flex-col w-full border-t border-slate-200 bg-white">
       {/* Timeline Header */}
-      <div className="editor-section-header flex items-center justify-between px-5 bg-slate-50/70 border-b border-slate-200">
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-50/70 border-b border-slate-200">
         {/* Left: Section Title */}
         <div className="flex items-center gap-1.5">
           <Sliders className="w-3.5 h-3.5 text-slate-500" />
@@ -107,19 +107,19 @@ export const Timeline: React.FC = () => {
           </div>
 
           {/* Track 1: Video */}
-          <div className="timeline-lane-label h-10 flex items-center px-3 gap-1.5 border-b border-slate-100">
+          <div className="h-9 flex items-center px-3 gap-1.5 border-b border-slate-100">
             <Video className="w-3.5 h-3.5 text-sky-600" />
             <span className="text-[11px] font-semibold text-slate-800">VIDEO</span>
           </div>
 
           {/* Track 2: Voiceover */}
-          <div className="timeline-lane-label h-14 flex items-center px-3 gap-1.5 border-b border-slate-100">
+          <div className="h-12 flex items-center px-3 gap-1.5 border-b border-slate-100">
             <Mic className="w-3.5 h-3.5 text-purple-600" />
             <span className="text-[11px] font-semibold text-slate-800">VOICE</span>
           </div>
 
           {/* Track 3: Music */}
-          <div className="timeline-lane-label h-14 flex items-center px-3 gap-1.5">
+          <div className="h-12 flex items-center px-3 gap-1.5">
             <Music className="w-3.5 h-3.5 text-cyan-600" />
             <span className="text-[11px] font-semibold text-slate-800">MUSIC</span>
           </div>
@@ -158,7 +158,7 @@ export const Timeline: React.FC = () => {
             </div>
 
             {/* Lane 1: Video Track Bar */}
-            <div className="relative h-10 flex items-center px-1 border-b border-slate-100">
+            <div className="relative h-9 flex items-center px-1 border-b border-slate-100">
               <div
                 className="h-6 rounded-md flex items-center gap-1.5 px-2 text-[10px] font-mono font-medium bg-sky-50 border border-sky-300 text-sky-800 shadow-2xs overflow-hidden"
                 style={{ width: `${videoDuration * zoom}px` }}

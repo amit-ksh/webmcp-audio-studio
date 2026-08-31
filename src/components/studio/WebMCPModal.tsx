@@ -41,11 +41,11 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-dialog modal-wide p-0 max-h-[85vh] flex flex-col bg-white overflow-hidden"
+        className="modal-dialog p-0 max-w-2xl max-h-[85vh] flex flex-col bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="modal-header p-5 bg-slate-50/70 flex items-center justify-between">
+        <div className="p-5 pb-4 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shadow-xs">
               <Bot className="w-4 h-4" />

@@ -65,7 +65,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ videoRef, onNewVideo
   return (
     <div className="flex flex-col w-full">
       {/* Project / Video Context Header */}
-      <div className="editor-toolbar flex items-center justify-between px-5 bg-white border-b border-slate-200">
+      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200">
         {/* Left: Change video button & filename */}
         <div className="flex items-center gap-2.5 min-w-0">
           <button
@@ -95,7 +95,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ videoRef, onNewVideo
       </div>
 
       {/* Video Canvas Container (Hero) */}
-      <div className="studio-canvas relative aspect-video w-full flex items-center justify-center group overflow-hidden">
+      <div className="relative aspect-video w-full bg-slate-950 flex items-center justify-center group overflow-hidden">
         <video
           ref={videoRef}
           src={activeVideoObjectUrl}
@@ -111,7 +111,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ videoRef, onNewVideo
         <button
           type="button"
           onClick={togglePlay}
-          className="absolute inset-0 m-auto z-10 w-14 h-14 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 hover:scale-105 transition-all shadow-xl bg-white/15 text-white backdrop-blur-md border border-white/25"
+          className="absolute inset-0 m-auto w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:scale-105 transition-all shadow-lg bg-slate-900/80 text-white backdrop-blur-xs border border-white/10"
         >
           {isPlaying || isAudioPlaying ? (
             <Pause className="w-5 h-5 fill-current" />
