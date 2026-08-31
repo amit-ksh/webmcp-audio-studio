@@ -5,6 +5,7 @@ import { usePlaybackStore } from '../../../stores/playback-store'
 import { useProjectStore } from '../../../stores/project-store'
 import { audioEngine } from '../../../audio/engine'
 import { PlaybackControls } from '../../../components/studio/PlaybackControls'
+import { formatTime } from '../../../lib/utils'
 
 interface VideoPreviewProps {
   videoRef: React.RefObject<HTMLVideoElement | null>
@@ -71,13 +72,37 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
     <div className="flex flex-col w-full">
       {/* Project / Video Context Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-white border-b border-slate-200">
-        {/* Left: Change video button & filename */}
+        {/* Left: video name and details */}
         <div className="flex items-center gap-2.5 min-w-0">
+          <Film className="w-4 h-4 text-sky-600 flex-shrink-0" />
+          <div className="min-w-0">
+            <p
+              className="font-medium text-xs text-slate-800 truncate max-w-sm"
+              title={activeVideo.name}
+            >
+              {activeVideo.name}
+            </p>
+            <p className="mt-0.5 text-[10px] font-mono text-slate-400 whitespace-nowrap overflow-hidden text-ellipsis">
+              {formatTime(activeVideo.durationSec)} • {activeVideo.metadata.width}×
+              {activeVideo.metadata.height} {activeVideo.metadata.frameRate || 30} fps{' '}
+              {(activeVideo.sizeBytes / (1024 * 1024)).toFixed(1)} MB
+            </p>
+          </div>
+        </div>
+
+        {/* Right: status and change action */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {activeVideo.transcriptionStatus === 'completed' && (
+            <span className="hidden sm:flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700">
+              <FileText className="h-3 w-3" />
+              Transcript ready
+            </span>
+          )}
           <button
             type="button"
             onClick={onChangeVideo}
             disabled={isChangingVideo}
-            className="btn btn-secondary text-[11px] py-1 px-2 rounded text-slate-600 hover:text-slate-900 flex items-center gap-1"
+            className="btn btn-secondary text-[11px] py-1.5 px-2.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center gap-1.5"
             title="Choose a different video file"
           >
             {isChangingVideo ? (
@@ -85,28 +110,8 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
             ) : (
               <RefreshCw className="w-3 h-3" />
             )}
-            <span>{isChangingVideo ? 'Importing' : 'Change'}</span>
+            <span>{isChangingVideo ? 'Importing' : 'Change video'}</span>
           </button>
-
-          <div className="flex items-center gap-1.5 text-xs text-slate-700 min-w-0">
-            <Film className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-            <span className="font-medium truncate max-w-sm" title={activeVideo.name}>
-              {activeVideo.name}
-            </span>
-          </div>
-        </div>
-
-        {/* Right: Subtle Metadata */}
-        <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-          {activeVideo.transcriptionStatus === 'completed' && (
-            <span className="flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1 font-sans font-medium text-emerald-700">
-              <FileText className="h-3 w-3" />
-              Transcript ready
-            </span>
-          )}
-          <span>{activeVideo.metadata.width}×{activeVideo.metadata.height}</span>
-          <span>•</span>
-          <span>{activeVideo.metadata.frameRate || 30} fps</span>
         </div>
       </div>
 

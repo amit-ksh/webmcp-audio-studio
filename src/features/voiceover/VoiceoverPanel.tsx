@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Mic, Sparkles, Play, Pause, Trash2, Check, RefreshCw } from 'lucide-react'
+import { X, Mic, Sparkles, Play, Pause, Trash2, Check, Plus } from 'lucide-react'
 import { voiceoverService } from './voiceover-service'
 import { getAudioContext } from '../../audio/audio-context'
 import { getDecodedAudioBuffer } from '../../audio/audio-buffer-pool'
@@ -36,6 +36,8 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
 
   const currentProject = useProjectStore((state) => state.currentProject)
   const removeClip = useProjectStore((state) => state.removeClip)
+  const voiceTrack = currentProject?.tracks.find((track) => track.type === 'voiceover')
+  const voiceClipCount = voiceTrack?.clips.length ?? 0
 
   if (!isOpen) return null
 
@@ -111,9 +113,7 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
             <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-200">
               <Mic className="w-4 h-4" />
             </div>
-            <h2 className="text-sm font-bold text-slate-900">
-              Add Voiceover
-            </h2>
+            <h2 className="text-sm font-bold text-slate-900">Add Voiceover</h2>
           </div>
           <button
             type="button"
@@ -133,8 +133,8 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
                 Voiceover ({formatTime(generatedAsset.durationSec)})
               </span>
-              <span className="font-mono text-[10px] text-purple-700 font-medium bg-purple-100 px-2 py-0.5 rounded-md">
-                Added to track
+              <span className="font-mono text-[10px] text-purple-700 font-medium bg-purple-100 px-2 py-1 rounded-md">
+                {voiceClipCount} {voiceClipCount === 1 ? 'clip' : 'clips'} on track
               </span>
             </div>
 
@@ -142,22 +142,23 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
             <div className="h-5 rounded-lg flex items-center px-2 bg-purple-100 border border-purple-300">
               <div className="flex items-center gap-1 w-full overflow-hidden opacity-90">
                 {Array.from({ length: 32 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-1.5 h-2.5 rounded-full bg-purple-600"
-                  />
+                  <div key={i} className="w-1.5 h-2.5 rounded-full bg-purple-600" />
                 ))}
               </div>
             </div>
 
-            {/* Actions: Preview, Replace, Delete */}
+            {/* Actions: Preview, add another clip, delete latest */}
             <div className="flex items-center gap-2 pt-1">
               <button
                 type="button"
                 onClick={handlePreview}
                 className="btn btn-secondary text-xs flex-1 py-1.5 rounded-lg font-medium text-slate-800"
               >
-                {previewing ? <Pause className="w-3 h-3 text-purple-600" /> : <Play className="w-3 h-3 fill-current text-purple-600" />}
+                {previewing ? (
+                  <Pause className="w-3 h-3 text-purple-600" />
+                ) : (
+                  <Play className="w-3 h-3 fill-current text-purple-600" />
+                )}
                 <span>{previewing ? 'Pause' : 'Preview audio'}</span>
               </button>
 
@@ -166,8 +167,8 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
                 onClick={() => setGeneratedAsset(null)}
                 className="btn btn-secondary text-xs flex-1 py-1.5 rounded-lg font-medium text-slate-800"
               >
-                <RefreshCw className="w-3 h-3 text-slate-500" />
-                <span>Replace</span>
+                <Plus className="w-3 h-3 text-purple-600" />
+                <span>Add another</span>
               </button>
 
               <button
@@ -188,9 +189,7 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
             {/* Script Text */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between text-xs">
-                <label className="font-semibold text-slate-800">
-                  Script
-                </label>
+                <label className="font-semibold text-slate-800">Script</label>
                 <span className="font-mono text-[11px] text-slate-400">
                   {scriptText.split(/\s+/).filter(Boolean).length} words
                 </span>
@@ -219,9 +218,7 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
 
             {/* Voice Selection */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-800">
-                Voice Persona
-              </label>
+              <label className="text-xs font-semibold text-slate-800">Voice Persona</label>
               <select
                 value={voiceId}
                 onChange={(e) => setVoiceId(e.target.value)}
@@ -237,9 +234,7 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
 
             {/* Speed slider */}
             <div className="flex items-center justify-between gap-3 pt-1">
-              <label className="text-xs font-medium text-slate-600">
-                Speed
-              </label>
+              <label className="text-xs font-medium text-slate-600">Speed</label>
               <input
                 type="range"
                 min="0.75"
@@ -262,7 +257,9 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
               className="btn btn-primary text-xs py-2.5 w-full rounded-xl font-bold shadow-md mt-1"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{isGenerating ? progressMsg || 'Synthesizing speech…' : 'Generate voiceover'}</span>
+              <span>
+                {isGenerating ? progressMsg || 'Synthesizing speech…' : 'Generate voiceover'}
+              </span>
             </button>
           </>
         )}

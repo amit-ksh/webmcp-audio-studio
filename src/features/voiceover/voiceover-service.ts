@@ -19,10 +19,9 @@ class VoiceoverService {
     onProgress?.({ progress: 10, message: 'Starting speech synthesis worker...' })
 
     return new Promise((resolve, reject) => {
-      const worker = new Worker(
-        new URL('../../workers/tts.worker.ts', import.meta.url),
-        { type: 'module' },
-      )
+      const worker = new Worker(new URL('../../workers/tts.worker.ts', import.meta.url), {
+        type: 'module',
+      })
 
       worker.onmessage = async (event) => {
         const data = event.data
@@ -84,8 +83,11 @@ class VoiceoverService {
               if (voiceTrack) {
                 let startSec = request.startSec ?? 0
                 if (request.startSec === undefined && voiceTrack.clips.length > 0) {
-                  const lastClip = voiceTrack.clips[voiceTrack.clips.length - 1]
-                  startSec = lastClip.startSec + lastClip.durationSec + 0.5
+                  const latestClipEnd = voiceTrack.clips.reduce(
+                    (latestEnd, clip) => Math.max(latestEnd, clip.startSec + clip.durationSec),
+                    0,
+                  )
+                  startSec = latestClipEnd + 0.5
                 }
 
                 store.addClipToTrack(voiceTrack.id, {
