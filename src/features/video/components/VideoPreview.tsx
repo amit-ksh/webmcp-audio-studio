@@ -70,7 +70,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
   return (
     <div className="flex flex-col w-full">
       {/* Project / Video Context Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-white border-b border-slate-200">
         {/* Left: Change video button & filename */}
         <div className="flex items-center gap-2.5 min-w-0">
           <button
@@ -99,7 +99,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({
         {/* Right: Subtle Metadata */}
         <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
           {activeVideo.transcriptionStatus === 'completed' && (
-            <span className="flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 font-sans font-medium text-emerald-700">
+            <span className="flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-1 font-sans font-medium text-emerald-700">
               <FileText className="h-3 w-3" />
               Transcript ready
             </span>

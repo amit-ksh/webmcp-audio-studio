@@ -41,7 +41,7 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-dialog p-0 max-w-2xl max-h-[85vh] flex flex-col bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden"
+        className="modal-dialog modal-dialog-wide p-0 flex flex-col bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -55,7 +55,7 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
                 <h2 className="text-sm font-bold text-slate-900">
                   WebMCP Protocol Tools
                 </h2>
-                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="text-[10px] font-mono font-semibold px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
                   {WEBMCP_TOOLS.length} Registered
                 </span>
               </div>
@@ -68,14 +68,15 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+          className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+          aria-label="Close WebMCP tools"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="p-3 px-5 border-b border-slate-100 bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        <div className="px-5 py-4 border-b border-slate-100 bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -93,7 +94,7 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
             <button
               type="button"
               onClick={() => setFilterType('all')}
-              className={`text-xs px-2.5 py-1 rounded-md transition-colors font-medium ${
+              className={`text-xs px-3 py-1.5 rounded-md transition-colors font-medium ${
                 filterType === 'all'
                   ? 'bg-blue-50 text-blue-700 border border-blue-200 font-semibold'
                   : 'text-slate-600 hover:bg-slate-100'
@@ -105,7 +106,7 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
             <button
               type="button"
               onClick={() => setFilterType('readonly')}
-              className={`text-xs px-2.5 py-1 rounded-md transition-colors font-medium ${
+              className={`text-xs px-3 py-1.5 rounded-md transition-colors font-medium ${
                 filterType === 'readonly'
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold'
                   : 'text-slate-600 hover:bg-slate-100'
@@ -117,7 +118,7 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
             <button
               type="button"
               onClick={() => setFilterType('action')}
-              className={`text-xs px-2.5 py-1 rounded-md transition-colors font-medium ${
+              className={`text-xs px-3 py-1.5 rounded-md transition-colors font-medium ${
                 filterType === 'action'
                   ? 'bg-purple-50 text-purple-700 border border-purple-200 font-semibold'
                   : 'text-slate-600 hover:bg-slate-100'
@@ -129,7 +130,7 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
         </div>
 
         {/* Scrollable Tool List */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5 bg-slate-50/40">
+        <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3 bg-slate-50/40">
           {filteredTools.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400">
               No WebMCP tools found matching &ldquo;{searchQuery}&rdquo;
@@ -143,7 +144,7 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
               return (
                 <div
                   key={tool.name}
-                  className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs hover:border-slate-300 transition-all"
+                  className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs hover:border-slate-300 transition-all"
                 >
                   {/* Tool Header Row */}
                   <div className="flex items-start justify-between gap-3">
@@ -157,12 +158,12 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
                         </span>
 
                         {tool.readOnlyHint ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 text-[10px] leading-none font-mono font-medium px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
                             read-only
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                          <span className="inline-flex items-center gap-1 text-[10px] leading-none font-mono font-medium px-2 py-1 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
                             <Wrench className="w-2.5 h-2.5 text-purple-600" />
                             action
                           </span>
@@ -233,7 +234,7 @@ export const WebMCPModal: React.FC<WebMCPModalProps> = ({ isOpen, onClose }) => 
                                   ({prop?.type || 'any'})
                                 </span>
                                 {isRequired ? (
-                                  <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                                  <span className="text-[9px] leading-none font-mono px-1.5 py-1 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
                                     required
                                   </span>
                                 ) : (

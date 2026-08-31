@@ -111,11 +111,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-dialog p-6 flex flex-col gap-5 bg-white border border-slate-200 shadow-2xl rounded-2xl"
+        className="modal-dialog p-6 flex flex-col gap-6 bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200">
               <Download className="w-4 h-4" />
@@ -127,7 +127,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            aria-label="Close export dialog"
           >
             <X className="w-4 h-4" />
           </button>
@@ -190,7 +191,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                 </span>
 
                 <label
-                  className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
+                  className={`flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all border ${
                     exportTarget === 'video_audio'
                       ? 'bg-blue-50/70 border-blue-500 shadow-2xs font-semibold'
                       : 'bg-white border-slate-200 hover:border-slate-300'
@@ -223,7 +224,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
                 <div className="flex flex-col gap-2">
                   <label
-                    className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border ${
+                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
                       exportTarget === 'all_audio'
                         ? 'bg-blue-50/70 border-blue-500 shadow-2xs font-semibold'
                         : 'bg-white border-slate-200 hover:border-slate-300'
@@ -243,7 +244,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                   </label>
 
                   <label
-                    className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border ${
+                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
                       exportTarget === 'voiceover_only'
                         ? 'bg-blue-50/70 border-blue-500 shadow-2xs font-semibold'
                         : 'bg-white border-slate-200 hover:border-slate-300'
@@ -262,7 +263,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                   </label>
 
                   <label
-                    className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border ${
+                    className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
                       exportTarget === 'music_only'
                         ? 'bg-blue-50/70 border-blue-500 shadow-2xs font-semibold'
                         : 'bg-white border-slate-200 hover:border-slate-300'

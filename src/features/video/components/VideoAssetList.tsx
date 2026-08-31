@@ -100,7 +100,7 @@ export const VideoAssetList: React.FC = () => {
                       <Film className="w-5 h-5" />
                     </div>
                   )}
-                  <span className="absolute bottom-1 right-1 bg-black/80 px-1 py-0.2 rounded text-[9px] font-mono text-slate-200">
+                  <span className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-mono text-slate-200">
                     {formatTime(video.durationSec)}
                   </span>
                 </div>

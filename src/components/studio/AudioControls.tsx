@@ -1,5 +1,5 @@
 import React from 'react'
-import { Mic, Music, Volume2, VolumeX, Trash2, Plus } from 'lucide-react'
+import { Mic, Music, Volume2, VolumeX, Trash2 } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
 import { formatDb } from '../../lib/utils'
 
@@ -38,7 +38,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   return (
     <div className="flex flex-col w-full border-t border-slate-200 bg-white">
       {/* Audio Mixer Header & Secondary Add Actions */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50/70 border-b border-slate-200">
+      <div className="flex items-center justify-between px-4 py-3 bg-slate-50/70 border-b border-slate-200">
         <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-700">
           Audio Mixer
         </span>
@@ -48,9 +48,8 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
           <button
             type="button"
             onClick={onOpenVoiceoverModal}
-            className="btn btn-secondary text-xs py-1 px-2.5 rounded text-purple-700 hover:text-purple-800 border-purple-200 hover:bg-purple-50 flex items-center gap-1 font-medium"
+            className="btn btn-secondary text-xs py-1.5 px-3 rounded-md text-purple-700 hover:text-purple-800 border-purple-200 hover:bg-purple-50 flex items-center gap-1.5 font-medium"
           >
-            <Plus className="w-3 h-3 text-purple-600" />
             <Mic className="w-3 h-3 text-purple-600" />
             <span>Voiceover</span>
           </button>
@@ -58,9 +57,8 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
           <button
             type="button"
             onClick={onOpenMusicModal}
-            className="btn btn-secondary text-xs py-1 px-2.5 rounded text-cyan-700 hover:text-cyan-800 border-cyan-200 hover:bg-cyan-50 flex items-center gap-1 font-medium"
+            className="btn btn-secondary text-xs py-1.5 px-3 rounded-md text-cyan-700 hover:text-cyan-800 border-cyan-200 hover:bg-cyan-50 flex items-center gap-1.5 font-medium"
           >
-            <Plus className="w-3 h-3 text-cyan-600" />
             <Music className="w-3 h-3 text-cyan-600" />
             <span>Background music</span>
           </button>
@@ -71,7 +69,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 bg-white">
         {/* Voiceover Card */}
         {voiceTrack && (
-          <div className="p-3.5 flex flex-col justify-between gap-3">
+          <div className="p-4 flex flex-col justify-between gap-3.5">
             {/* Card Header: Icon, Name, Clip Count, Clear */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -81,7 +79,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 <span className="text-xs font-semibold text-slate-800">
                   Voiceover
                 </span>
-                <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">
+                <span className="text-[10px] leading-none font-mono font-medium px-2 py-1 rounded-md bg-slate-100 text-slate-500">
                   {voiceTrack.clips.length} {voiceTrack.clips.length === 1 ? 'clip' : 'clips'}
                 </span>
               </div>
@@ -142,7 +140,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
 
         {/* Background Music Card */}
         {musicTrack && (
-          <div className="p-3.5 flex flex-col justify-between gap-3">
+          <div className="p-4 flex flex-col justify-between gap-3.5">
             {/* Card Header: Icon, Name, Clip Count, Clear */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -152,7 +150,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 <span className="text-xs font-semibold text-slate-800">
                   Background Music
                 </span>
-                <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-slate-100 text-slate-500">
+                <span className="text-[10px] leading-none font-mono font-medium px-2 py-1 rounded-md bg-slate-100 text-slate-500">
                   {musicTrack.clips.length} {musicTrack.clips.length === 1 ? 'clip' : 'clips'}
                 </span>
               </div>

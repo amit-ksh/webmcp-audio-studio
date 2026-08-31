@@ -37,12 +37,10 @@
 
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html, body {
-  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   background-color: var(--background);
   color: var(--foreground);
@@ -70,11 +68,12 @@ html, body {
 /* Studio Layout Container */
 .studio-container {
   width: 100%;
-  max-width: 960px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 1.25rem 1rem 3rem 1rem;
+  padding: 1.25rem clamp(1rem, 2.5vw, 2rem) 3rem;
   display: flex;
   flex-direction: column;
+  min-height: 100dvh;
 }
 
 /* Unified Editor Surface */
@@ -82,7 +81,7 @@ html, body {
   background-color: #ffffff;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 10px 25px -5px rgba(15, 23, 42, 0.02);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 16px 36px -24px rgba(30, 64, 175, 0.18);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -97,9 +96,9 @@ html, body {
   padding: 0.45rem 0.85rem;
   border-radius: var(--radius-md);
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.12s ease-in-out;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   border: 1px solid transparent;
   outline: none;
   user-select: none;
@@ -197,23 +196,30 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(15, 23, 42, 0.46);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: 1rem;
-  backdrop-filter: blur(4px);
+  padding: 1.5rem;
+  backdrop-filter: blur(8px);
 }
 .modal-dialog {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   width: 100%;
-  max-width: 480px;
-  box-shadow: 0 20px 40px -5px rgba(15, 23, 42, 0.18);
-  overflow: hidden;
+  max-width: 520px;
+  max-height: calc(100dvh - 3rem);
+  box-shadow: 0 28px 72px -28px rgba(15, 23, 42, 0.46), 0 8px 24px -18px rgba(15, 23, 42, 0.28);
+  overflow-y: auto;
   animation: modalIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-dialog-wide {
+  max-width: 760px;
+  max-height: min(86dvh, 820px);
+  overflow: hidden;
 }
 
 @keyframes modalIn {
@@ -224,5 +230,21 @@ input[type="range"]::-webkit-slider-thumb:hover {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .studio-container {
+    padding: 0.75rem 0.75rem 1.5rem;
+  }
+
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0.75rem;
+  }
+
+  .modal-dialog {
+    max-height: calc(100dvh - 1.5rem);
+    border-radius: 14px;
   }
 }

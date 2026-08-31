@@ -50,7 +50,7 @@ export const Timeline: React.FC = () => {
   return (
     <div className="flex flex-col w-full border-t border-slate-200 bg-white">
       {/* Timeline Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-50/70 border-b border-slate-200">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50/70 border-b border-slate-200">
         {/* Left: Section Title */}
         <div className="flex items-center gap-1.5">
           <Sliders className="w-3.5 h-3.5 text-slate-500" />
@@ -60,7 +60,7 @@ export const Timeline: React.FC = () => {
         </div>
 
         {/* Center: Current Time Indicator */}
-        <div className="px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-white border border-slate-200 text-blue-600 shadow-2xs">
+        <div className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-white border border-slate-200 text-blue-600 shadow-2xs">
           {formatTime(currentTime)}
         </div>
 
