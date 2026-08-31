@@ -1,76 +1,48 @@
 import React, { useState } from 'react'
-import { Mic, Sparkles, UserCheck, Play, Pause, Check } from 'lucide-react'
+import { X, Mic, Sparkles, Play, Pause, Trash2, Check, RefreshCw } from 'lucide-react'
 import { voiceoverService } from './voiceover-service'
-import { usePlaybackStore } from '../../stores/playback-store'
 import { getAudioContext } from '../../audio/audio-context'
 import { getDecodedAudioBuffer } from '../../audio/audio-buffer-pool'
+import { useProjectStore } from '../../stores/project-store'
 import { formatTime } from '../../lib/utils'
 import type { AudioAsset } from '../../contracts/project'
 
-const TEMPLATE_SCRIPTS = [
-  {
-    title: 'SaaS Product Launch',
-    text: 'Introducing our new AI-powered platform. Built for modern software teams to ship 10x faster.',
-  },
-  {
-    title: 'Feature Explainer',
-    text: 'With intelligent automation and real-time audio ducking, your marketing demos sound studio-mastered.',
-  },
-  {
-    title: 'Developer Demo',
-    text: 'Seamlessly controlled via WebMCP browser agents, directly executing your audio creation pipeline.',
-  },
+interface VoiceoverPanelProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+const TEMPLATES = [
+  'Welcome to our product walkthrough. In this video, we explore core features.',
+  'Introducing the next generation platform built for modern creative workflows.',
+  'Easily edit audio, synthesize voiceovers, and generate backing music in your browser.',
 ]
 
 const VOICES = [
-  {
-    id: 'narrator_male',
-    name: 'Tech Narrator',
-    gender: 'Male',
-    tone: 'Warm, Confident & Authoritative',
-    desc: 'Ideal for product overviews, developer walkthroughs, and main narrations.',
-  },
-  {
-    id: 'narrator_female',
-    name: 'SaaS Host',
-    gender: 'Female',
-    tone: 'Crisp, Engaging & Articulate',
-    desc: 'Great for feature explainers, customer onboarding, and tutorial videos.',
-  },
-  {
-    id: 'energetic_launch',
-    name: 'Launch Energy',
-    gender: 'Male/Bright',
-    tone: 'Dynamic, High-Tempo & Punchy',
-    desc: 'Best for product launch teasers, marketing hype, and promo sizzle reels.',
-  },
-  {
-    id: 'executive_calm',
-    name: 'Executive Calm',
-    gender: 'Deep',
-    tone: 'Deep, Resonant & Steady',
-    desc: 'Perfect for investor pitches, case studies, and enterprise presentations.',
-  },
+  { id: 'narrator_male', name: 'Tech Narrator (Male)' },
+  { id: 'narrator_female', name: 'SaaS Host (Female)' },
+  { id: 'energetic_launch', name: 'Launch Energy (Male/Bright)' },
+  { id: 'executive_calm', name: 'Executive Calm (Deep)' },
 ]
 
-export const VoiceoverPanel: React.FC = () => {
-  const { setSidebarTab } = usePlaybackStore()
-  const [scriptText, setScriptText] = useState(TEMPLATE_SCRIPTS[0].text)
+export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose }) => {
+  const [scriptText, setScriptText] = useState(TEMPLATES[0])
   const [voiceId, setVoiceId] = useState('narrator_male')
   const [speed, setSpeed] = useState(1.0)
-  const [pitch, setPitch] = useState(1.0)
-  const [autoInsert, setAutoInsert] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [statusMessage, setStatusMessage] = useState('')
-  const [lastGeneratedAsset, setLastGeneratedAsset] = useState<AudioAsset | null>(null)
+  const [progressMsg, setProgressMsg] = useState('')
+  const [generatedAsset, setGeneratedAsset] = useState<AudioAsset | null>(null)
   const [previewing, setPreviewing] = useState(false)
+
+  const currentProject = useProjectStore((state) => state.currentProject)
+  const removeClip = useProjectStore((state) => state.removeClip)
+
+  if (!isOpen) return null
 
   const handleGenerate = async () => {
     if (!scriptText.trim()) return
     setIsGenerating(true)
-    setProgress(15)
-    setStatusMessage('Generating vocal track...')
+    setProgressMsg('Generating voiceover…')
 
     try {
       const asset = await voiceoverService.generateVoiceover(
@@ -78,25 +50,24 @@ export const VoiceoverPanel: React.FC = () => {
           text: scriptText.trim(),
           voiceId,
           speed,
-          pitch,
-          autoInsertToTimeline: autoInsert,
+          pitch: 1.0,
+          autoInsertToTimeline: true,
         },
-        ({ progress: prog, message }) => {
-          setProgress(prog)
-          setStatusMessage(message)
+        ({ message }) => {
+          setProgressMsg(message)
         },
       )
-      setLastGeneratedAsset(asset)
+      setGeneratedAsset(asset)
     } catch (err) {
-      console.error('Failed to generate voiceover:', err)
-      alert('Failed to generate voiceover speech')
+      console.error('Voiceover generation failed:', err)
+      alert('Failed to generate voiceover')
     } finally {
       setIsGenerating(false)
     }
   }
 
   const handlePreview = async () => {
-    if (!lastGeneratedAsset) return
+    if (!generatedAsset) return
     const ctx = getAudioContext()
     if (previewing) {
       setPreviewing(false)
@@ -104,7 +75,7 @@ export const VoiceoverPanel: React.FC = () => {
     }
 
     try {
-      const buffer = await getDecodedAudioBuffer(lastGeneratedAsset.id)
+      const buffer = await getDecodedAudioBuffer(generatedAsset.id)
       const source = ctx.createBufferSource()
       source.buffer = buffer
       source.connect(ctx.destination)
@@ -117,185 +88,201 @@ export const VoiceoverPanel: React.FC = () => {
     }
   }
 
+  const handleDelete = () => {
+    if (currentProject && generatedAsset) {
+      const voiceTrack = currentProject.tracks.find((t) => t.type === 'voiceover')
+      const clip = voiceTrack?.clips.find((c) => c.assetId === generatedAsset.id)
+      if (clip) {
+        removeClip(clip.id)
+      }
+    }
+    setGeneratedAsset(null)
+  }
+
   return (
-    <div className="flex flex-col h-full p-4 overflow-y-auto">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-2 rounded-lg bg-violet-950/60 border border-violet-500/30 text-violet-400 shadow-sm">
-          <Mic className="w-5 h-5" />
-        </div>
-        <div>
-          <h2 className="text-sm font-bold text-slate-100 uppercase tracking-wider">
-            Voiceover Studio
-          </h2>
-          <p className="text-xs text-slate-400">Multi-Timbre TTS in Web Worker</p>
-        </div>
-      </div>
-
-      {/* Preset Script Chips */}
-      <div className="flex flex-col gap-1.5 mt-1">
+    <div className="modal-backdrop" onClick={onClose}>
+      <div
+        className="modal-dialog p-5 flex flex-col gap-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <label className="text-[11px] font-semibold text-slate-400">Script Templates</label>
+          <div className="flex items-center gap-2">
+            <Mic className="w-4 h-4" style={{ color: 'var(--track-voice)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+              Voiceover
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn btn-ghost text-xs p-1"
+            style={{ color: 'var(--muted-foreground)' }}
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {TEMPLATE_SCRIPTS.map((t, idx) => (
-            <button
-              key={idx}
-              onClick={() => setScriptText(t.text)}
-              className="text-[10px] bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 px-2 py-1 rounded transition-colors"
-            >
-              {t.title}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Script Text Input */}
-      <div className="flex flex-col gap-1.5 mt-3">
-        <label className="text-xs font-semibold text-slate-300">Narration Script</label>
-        <textarea
-          value={scriptText}
-          onChange={(e) => setScriptText(e.target.value)}
-          placeholder="Enter product pitch, narration, or explainer script..."
-          className="textarea text-xs h-24"
-        />
-        <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-          <span>{scriptText.split(/\s+/).filter(Boolean).length} words</span>
-          <span>~{Math.ceil((scriptText.split(/\s+/).filter(Boolean).length / 2.5) / speed)}s duration</span>
-        </div>
-      </div>
+        {/* Generated State Card if asset is ready */}
+        {generatedAsset && (
+          <div
+            className="p-3 rounded-md flex flex-col gap-2.5"
+            style={{
+              backgroundColor: 'var(--surface-elevated)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--foreground)' }}>
+                <Check className="w-3.5 h-3.5" style={{ color: 'var(--success)' }} />
+                Voiceover ({formatTime(generatedAsset.durationSec)})
+              </span>
+              <span className="font-mono text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                Added to track
+              </span>
+            </div>
 
-      {/* Voice Persona Selection */}
-      <div className="flex flex-col gap-2 mt-3">
-        <label className="text-xs font-semibold text-slate-300">Voice Persona</label>
-        <div className="grid grid-cols-1 gap-2">
-          {VOICES.map((v) => (
+            {/* Visual Bar representation */}
             <div
-              key={v.id}
-              onClick={() => setVoiceId(v.id)}
-              className={`p-2.5 rounded-lg border cursor-pointer transition-all ${
-                voiceId === v.id
-                  ? 'bg-violet-950/60 border-violet-500 text-white shadow-sm shadow-violet-500/20'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-              }`}
+              className="h-4 rounded flex items-center px-2"
+              style={{
+                backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                border: '1px solid var(--track-voice)',
+              }}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <UserCheck className={`w-3.5 h-3.5 ${voiceId === v.id ? 'text-violet-400' : 'text-slate-500'}`} />
-                  <span className="text-xs font-bold">{v.name}</span>
-                </div>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
-                  {v.gender}
+              <div className="flex items-center gap-1 w-full overflow-hidden opacity-80">
+                {Array.from({ length: 28 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-1.5 h-2 rounded-full"
+                    style={{ backgroundColor: 'var(--track-voice)' }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Actions: Preview, Replace, Delete */}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={handlePreview}
+                className="btn btn-secondary text-xs flex-1 py-1"
+              >
+                {previewing ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
+                <span>{previewing ? 'Pause' : 'Preview'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGeneratedAsset(null)}
+                className="btn btn-secondary text-xs flex-1 py-1"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Replace</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="btn btn-ghost text-xs p-1 text-red-400 hover:text-red-300"
+                title="Delete voiceover"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Input & Form (shown when creating or replacing) */}
+        {!generatedAsset && (
+          <>
+            {/* Script Text */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <label className="font-medium" style={{ color: 'var(--foreground)' }}>
+                  Script
+                </label>
+                <span className="font-mono text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                  {scriptText.split(/\s+/).filter(Boolean).length} words
                 </span>
               </div>
-              <p className="text-[11px] text-violet-300/90 font-medium mt-0.5">{v.tone}</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">{v.desc}</p>
+              <textarea
+                value={scriptText}
+                onChange={(e) => setScriptText(e.target.value)}
+                placeholder="Enter your script..."
+                className="textarea text-xs h-20"
+              />
+
+              {/* Template chips */}
+              <div className="flex flex-wrap gap-1 mt-1">
+                {TEMPLATES.map((t, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setScriptText(t)}
+                    className="text-[10px] px-2 py-0.5 rounded transition-colors truncate max-w-[200px]"
+                    style={{
+                      backgroundColor: 'var(--surface-elevated)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--muted-foreground)',
+                    }}
+                  >
+                    Template {idx + 1}
+                  </button>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Speed & Pitch Controls */}
-      <div className="grid grid-cols-2 gap-3 mt-3 bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-        <div className="flex flex-col gap-1">
-          <div className="flex justify-between text-xs text-slate-300">
-            <span>Speed</span>
-            <span className="font-mono text-cyan-400 font-bold">{speed.toFixed(2)}x</span>
-          </div>
-          <input
-            type="range"
-            min="0.5"
-            max="1.75"
-            step="0.05"
-            value={speed}
-            onChange={(e) => setSpeed(parseFloat(e.target.value))}
-            className="accent-violet-500 cursor-pointer"
-          />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <div className="flex justify-between text-xs text-slate-300">
-            <span>Pitch</span>
-            <span className="font-mono text-violet-400 font-bold">{pitch.toFixed(2)}x</span>
-          </div>
-          <input
-            type="range"
-            min="0.75"
-            max="1.25"
-            step="0.05"
-            value={pitch}
-            onChange={(e) => setPitch(parseFloat(e.target.value))}
-            className="accent-violet-500 cursor-pointer"
-          />
-        </div>
-      </div>
-
-      {/* Auto-Insert Toggle */}
-      <div className="flex items-center justify-between mt-3 px-1">
-        <span className="text-xs text-slate-300">Auto-add clip to Voiceover Track</span>
-        <input
-          type="checkbox"
-          checked={autoInsert}
-          onChange={(e) => setAutoInsert(e.target.checked)}
-          className="accent-violet-500 cursor-pointer w-4 h-4"
-        />
-      </div>
-
-      {/* Generate Button */}
-      <button
-        onClick={handleGenerate}
-        disabled={!scriptText.trim() || isGenerating}
-        className="btn btn-accent mt-4 w-full text-xs py-2 shadow-md shadow-violet-600/30"
-      >
-        <Sparkles className="w-4 h-4" />
-        {isGenerating ? 'Synthesizing Speech...' : 'Generate Voiceover'}
-      </button>
-
-      {/* Progress */}
-      {isGenerating && (
-        <div className="bg-slate-900/90 border border-violet-500/30 rounded-lg p-3 mt-3 flex flex-col gap-2 shadow-sm">
-          <div className="flex justify-between text-xs font-medium text-violet-400">
-            <span>{statusMessage}</span>
-            <span className="font-mono">{progress}%</span>
-          </div>
-          <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-violet-500 to-indigo-400 h-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Last Generated Preview Card */}
-      {lastGeneratedAsset && (
-        <div className="mt-4 bg-slate-900 border border-violet-500/40 rounded-lg p-3 flex flex-col gap-2 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-xs font-bold text-slate-200">Voiceover Ready</span>
+            {/* Voice Selection */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
+                Voice
+              </label>
+              <select
+                value={voiceId}
+                onChange={(e) => setVoiceId(e.target.value)}
+                className="select text-xs"
+              >
+                {VOICES.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <span className="text-[10px] font-mono text-violet-400">
-              {formatTime(lastGeneratedAsset.durationSec)}
-            </span>
-          </div>
 
-          <div className="flex items-center gap-2 mt-1">
+            {/* Speed slider */}
+            <div className="flex items-center justify-between gap-3">
+              <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                Speed
+              </label>
+              <input
+                type="range"
+                min="0.75"
+                max="1.5"
+                step="0.05"
+                value={speed}
+                onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-xs font-mono w-8 text-right" style={{ color: 'var(--foreground)' }}>
+                {speed.toFixed(2)}x
+              </span>
+            </div>
+
+            {/* Generate Action Button */}
             <button
-              onClick={handlePreview}
-              className="btn btn-secondary flex-1 text-xs py-1.5"
+              type="button"
+              onClick={handleGenerate}
+              disabled={!scriptText.trim() || isGenerating}
+              className="btn btn-primary text-xs py-2 w-full mt-1"
             >
-              {previewing ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-              {previewing ? 'Pause Preview' : 'Audition Audio'}
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{isGenerating ? progressMsg || 'Generating voiceover…' : 'Generate'}</span>
             </button>
-            <button
-              onClick={() => setSidebarTab('assets')}
-              className="btn btn-secondary text-xs py-1.5 px-3 text-slate-300"
-            >
-              View in Library
-            </button>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   )
 }
