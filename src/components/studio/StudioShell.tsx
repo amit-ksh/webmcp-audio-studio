@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Download } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
 import { useVideoStore } from '../../stores/video-store'
 import { StudioHeader } from './StudioHeader'
@@ -43,7 +42,7 @@ export const StudioShell: React.FC = () => {
 
   return (
     <div className="studio-container">
-      {/* Studio Top Header */}
+      {/* Top Application Header */}
       <StudioHeader
         onNewVideo={handleResetVideo}
         onOpenExport={() => setIsExportOpen(true)}
@@ -52,39 +51,26 @@ export const StudioShell: React.FC = () => {
 
       {/* Main Studio Viewport */}
       {!hasUploadedVideo ? (
-        /* Initial Upload State: Blended Dropzone */
+        /* Section 4: Seamless Initial Upload State */
         <VideoUploader onUploaded={() => {}} />
       ) : (
-        /* Connected Studio Workbench */
-        <main className="flex flex-col gap-4 w-full">
-          {/* Unified Connected Workbench Box */}
-          <div className="studio-workbench">
-            {/* 1. Top Video Stage */}
+        /* Unified Studio Editor Surface */
+        <main className="w-full">
+          <div className="editor-surface">
+            {/* 1. Video / Project Header & Video Preview Canvas */}
             <VideoPreview
               videoRef={videoRef}
               onNewVideo={handleResetVideo}
             />
 
-            {/* 2. Middle Connected Timeline */}
+            {/* 2. Timeline */}
             <Timeline />
 
-            {/* 3. Bottom Connected Audio Deck */}
+            {/* 3. Audio Mixer */}
             <AudioControls
               onOpenVoiceoverModal={() => setIsVoiceoverOpen(true)}
               onOpenMusicModal={() => setIsMusicOpen(true)}
             />
-          </div>
-
-          {/* Primary Big Export Button */}
-          <div className="w-full">
-            <button
-              type="button"
-              onClick={() => setIsExportOpen(true)}
-              className="btn btn-primary text-sm py-3.5 w-full rounded-xl font-bold shadow-md flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-all"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export Final Video & Audio</span>
-            </button>
           </div>
         </main>
       )}

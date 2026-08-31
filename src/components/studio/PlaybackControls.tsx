@@ -137,13 +137,13 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
   const maxDuration = Math.max(durationSec, currentProject?.durationSec || 1, 1)
 
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-50 border-t border-slate-200">
-      {/* Left Transport controls */}
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-slate-50 border-t border-slate-200 select-none">
+      {/* Left: Transport controls (Skip, Play/Pause, Forward) */}
+      <div className="flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => handleSkip(-5)}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors"
+          className="w-7 h-7 rounded flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
           title="Rewind 5s"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -152,35 +152,34 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
         <button
           type="button"
           onClick={handleTogglePlay}
-          className="w-9 h-9 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all"
+          className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-xs transition-transform active:scale-95 mx-0.5"
           title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
         >
           {isPlaying ? (
-            <Pause className="w-4 h-4 fill-current" />
+            <Pause className="w-3.5 h-3.5 fill-current" />
           ) : (
-            <Play className="w-4 h-4 fill-current ml-0.5" />
+            <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
           )}
         </button>
 
         <button
           type="button"
           onClick={() => handleSkip(5)}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors"
+          className="w-7 h-7 rounded flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
           title="Forward 5s"
         >
           <RotateCw className="w-3.5 h-3.5" />
         </button>
-
-        {/* Monospace Time Stamp Pill */}
-        <div className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold tracking-tight ml-1 bg-white border border-slate-200 shadow-2xs flex items-center gap-1.5">
-          <span className="text-blue-600">{formatTime(currentTime)}</span>
-          <span className="text-slate-300">/</span>
-          <span className="text-slate-500">{formatTime(maxDuration)}</span>
-        </div>
       </div>
 
-      {/* Center Scrubber slider */}
-      <div className="flex-1 mx-3 flex items-center">
+      {/* Center: Time & Scrubber */}
+      <div className="flex-1 flex items-center gap-2.5 mx-2">
+        <div className="text-[11px] font-mono font-medium text-slate-600 flex items-center gap-1 whitespace-nowrap">
+          <span className="text-slate-900 font-semibold">{formatTime(currentTime)}</span>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-400">{formatTime(maxDuration)}</span>
+        </div>
+
         <input
           type="range"
           min={0}
@@ -188,28 +187,28 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
           step={0.05}
           value={currentTime}
           onChange={handleSeek}
-          className="w-full cursor-pointer"
+          className="flex-1 cursor-pointer"
           title={`Seek: ${formatTime(currentTime)}`}
         />
       </div>
 
-      {/* Right Controls */}
+      {/* Right: Aspect ratio, Volume, Fullscreen */}
       <div className="flex items-center gap-2">
-        <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-500 shadow-2xs">
+        <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-600">
           16:9
         </span>
 
-        <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
+        <div className="flex items-center gap-1 pl-1.5 border-l border-slate-200">
           <button
             type="button"
             onClick={toggleMute}
-            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors"
+            className="w-7 h-7 rounded flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 transition-colors"
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted || masterVolume === 0 ? (
-              <VolumeX className="w-4 h-4 text-red-500" />
+              <VolumeX className="w-3.5 h-3.5 text-red-500" />
             ) : (
-              <Volume2 className="w-4 h-4" />
+              <Volume2 className="w-3.5 h-3.5" />
             )}
           </button>
 
@@ -220,7 +219,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
             step="0.05"
             value={isMuted ? 0 : masterVolume}
             onChange={handleVolumeChange}
-            className="w-16 cursor-pointer"
+            className="w-14 cursor-pointer"
             title={`Volume: ${Math.round((isMuted ? 0 : masterVolume) * 100)}%`}
           />
         </div>
@@ -228,7 +227,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
         <button
           type="button"
           onClick={handleFullscreen}
-          className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors ml-0.5"
+          className="w-7 h-7 rounded flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-200/60 transition-colors"
           title="Fullscreen"
         >
           <Maximize2 className="w-3.5 h-3.5" />

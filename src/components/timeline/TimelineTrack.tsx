@@ -64,14 +64,14 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
     window.addEventListener('mouseup', handleMouseUp)
   }
 
-  const getTrackColor = (type: TrackType) => {
+  const getTrackStyling = (type: TrackType) => {
     switch (type) {
       case 'voiceover':
         return {
           bg: '#faf5ff',
           border: '#d8b4fe',
           activeBorder: '#9333ea',
-          wave: '#a855f7',
+          wave: '#c084fc',
           text: '#581c87',
         }
       case 'music':
@@ -79,7 +79,7 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
           bg: '#ecfeff',
           border: '#a5f3fc',
           activeBorder: '#0891b2',
-          wave: '#06b6d4',
+          wave: '#22d3ee',
           text: '#164e63',
         }
       default:
@@ -88,17 +88,17 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
           border: '#bae6fd',
           activeBorder: '#0284c7',
           wave: '#38bdf8',
-          text: '#0c4a6e',
+          text: '#075985',
         }
     }
   }
 
-  const colors = getTrackColor(track.type)
+  const style = getTrackStyling(track.type)
 
   return (
-    <div className="relative h-14 w-full select-none border-b border-slate-100">
+    <div className="relative h-12 w-full select-none border-b border-slate-100">
       {track.clips.length === 0 ? (
-        <div className="h-full flex items-center px-4 text-[11px] font-mono italic text-slate-400">
+        <div className="h-full flex items-center px-4 text-[11px] font-mono text-slate-400">
           No clips on this track
         </div>
       ) : (
@@ -116,20 +116,20 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
                 selectClip(clip.id)
                 onClipClick?.(clip)
               }}
-              className={`absolute top-1.5 bottom-1.5 rounded-lg px-2.5 py-1 flex flex-col justify-between cursor-grab transition-all shadow-2xs ${
-                draggingClipId === clip.id ? 'cursor-grabbing opacity-90 scale-[1.01] shadow-md' : ''
+              className={`absolute top-1 bottom-1 rounded-md px-2 py-1 flex flex-col justify-between cursor-grab transition-all ${
+                draggingClipId === clip.id ? 'cursor-grabbing opacity-90 shadow-md' : 'shadow-2xs'
               }`}
               style={{
                 left: `${clipLeft}px`,
                 width: `${clipWidth}px`,
-                backgroundColor: colors.bg,
-                border: `1.5px solid ${isSelected ? colors.activeBorder : colors.border}`,
-                boxShadow: isSelected ? `0 0 0 1px ${colors.activeBorder}` : undefined,
+                backgroundColor: style.bg,
+                border: `1px solid ${isSelected ? style.activeBorder : style.border}`,
+                outline: isSelected ? `2px solid ${style.activeBorder}` : 'none',
               }}
             >
               {/* Top: Name & Remove */}
               <div className="flex items-center justify-between gap-1 overflow-hidden pointer-events-none">
-                <span className="text-[10px] font-bold font-mono truncate" style={{ color: colors.text }}>
+                <span className="text-[10px] font-semibold truncate" style={{ color: style.text }}>
                   {clip.name}
                 </span>
 
@@ -139,7 +139,7 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
                     e.stopPropagation()
                     removeClip(clip.id)
                   }}
-                  className="text-slate-400 hover:text-red-500 p-0.5 rounded transition-colors pointer-events-auto"
+                  className="text-slate-400 hover:text-red-500 p-0.5 rounded pointer-events-auto transition-colors"
                   title="Remove clip"
                 >
                   <Trash2 className="w-2.5 h-2.5" />
@@ -147,7 +147,7 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
               </div>
 
               {/* Waveform Visualization */}
-              <div className="flex items-center gap-[2px] h-3.5 overflow-hidden opacity-85 pointer-events-none">
+              <div className="flex items-center gap-[2px] h-3 overflow-hidden opacity-75 pointer-events-none">
                 {Array.from({ length: Math.min(60, Math.floor(clipWidth / 4)) }).map((_, i) => {
                   const barHeight = Math.sin(i * 0.45) * 35 + 50
                   return (
@@ -156,7 +156,7 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
                       className="w-[2px] rounded-full"
                       style={{
                         height: `${barHeight}%`,
-                        backgroundColor: colors.wave,
+                        backgroundColor: style.wave,
                       }}
                     />
                   )
@@ -164,7 +164,7 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
               </div>
 
               {/* Bottom: Timestamps */}
-              <div className="flex items-center justify-between text-[9px] font-mono opacity-80 pointer-events-none" style={{ color: colors.text }}>
+              <div className="flex items-center justify-between text-[8px] font-mono opacity-75 pointer-events-none" style={{ color: style.text }}>
                 <span>{formatTime(clip.startSec)}</span>
                 <span>{formatTime(clip.durationSec)}</span>
               </div>
@@ -172,7 +172,7 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
               {/* Right Trim Handle */}
               <div
                 onMouseDown={(e) => handleTrimRightMouseDown(e, clip)}
-                className="absolute right-0 top-0 bottom-0 w-2.5 cursor-ew-resize hover:bg-black/10 rounded-r-lg transition-colors"
+                className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-black/10 rounded-r-md transition-colors"
                 title="Drag to trim duration"
               />
             </div>
