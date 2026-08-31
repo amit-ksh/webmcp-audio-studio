@@ -102,11 +102,11 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-dialog p-6 flex flex-col gap-4 bg-white border border-slate-200 shadow-2xl rounded-2xl"
+        className="modal-dialog p-6 flex flex-col gap-5 bg-white"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div className="modal-header flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-200">
               <Mic className="w-4 h-4" />

@@ -30,21 +30,21 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
   }
 
   return (
-    <header className="flex items-center justify-between py-3 mb-3 border-b border-slate-200/80">
+    <header className="studio-header flex items-center justify-between border-b border-slate-200/80">
       {/* Left: Branding & Status */}
       <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-2xs">
-          <Sparkles className="w-3.5 h-3.5" />
+        <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-600/20">
+          <Sparkles className="w-4 h-4" />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold tracking-tight text-slate-900">
+            <span className="text-[15px] font-bold tracking-tight text-slate-950">
             Audio Studio
           </span>
 
           <button
             type="button"
             onClick={onOpenWebMCP}
-            className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer"
+            className="text-[10px] font-mono font-medium px-2 py-1 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-100 transition-colors flex items-center gap-1 cursor-pointer"
             title="Click to view 13 available WebMCP tools"
           >
             <span>WebMCP</span>
@@ -69,7 +69,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
         <button
           type="button"
           onClick={onOpenWebMCP}
-          className="btn btn-secondary text-xs py-1.5 px-2.5 rounded-md text-slate-700 hover:text-blue-600 hover:border-blue-300 flex items-center gap-1.5"
+          className="btn btn-secondary text-xs py-2 px-3 rounded-lg text-slate-700 hover:text-blue-600 hover:border-blue-300 flex items-center gap-1.5"
           title="Inspect available WebMCP agent tools and schemas"
         >
           <Terminal className="w-3.5 h-3.5 text-blue-600" />
@@ -79,7 +79,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
         <button
           type="button"
           onClick={handleNew}
-          className="btn btn-secondary text-xs py-1.5 px-3 rounded-md text-slate-700"
+          className="btn btn-secondary text-xs py-2 px-3 rounded-lg text-slate-700"
           title="Start fresh project"
         >
           <Plus className="w-3.5 h-3.5 text-slate-400" />
@@ -90,7 +90,7 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
           <button
             type="button"
             onClick={onOpenExport}
-            className="btn btn-primary text-xs py-1.5 px-3.5 rounded-md font-medium"
+            className="btn btn-primary text-xs py-2 px-3.5 rounded-lg font-semibold"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export</span>

@@ -137,7 +137,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
   const maxDuration = Math.max(durationSec, currentProject?.durationSec || 1, 1)
 
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-slate-50 border-t border-slate-200 select-none">
+    <div className="flex items-center justify-between gap-3 px-5 py-3 bg-slate-50/80 border-t border-slate-200 select-none">
       {/* Left: Transport controls (Skip, Play/Pause, Forward) */}
       <div className="flex items-center gap-1.5">
         <button
