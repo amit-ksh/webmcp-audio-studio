@@ -9,6 +9,7 @@ import { AudioControls } from './AudioControls'
 import { VoiceoverPanel } from '../../features/voiceover/VoiceoverPanel'
 import { MusicPanel } from '../../features/music/MusicPanel'
 import { ExportModal } from './ExportModal'
+import { WebMCPModal } from './WebMCPModal'
 import { registerWebMCPTools } from '../../webmcp/register-tools'
 
 export const StudioShell: React.FC = () => {
@@ -24,6 +25,7 @@ export const StudioShell: React.FC = () => {
   const [isVoiceoverOpen, setIsVoiceoverOpen] = useState(false)
   const [isMusicOpen, setIsMusicOpen] = useState(false)
   const [isExportOpen, setIsExportOpen] = useState(false)
+  const [isWebMCPOpen, setIsWebMCPOpen] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
@@ -46,6 +48,7 @@ export const StudioShell: React.FC = () => {
       <StudioHeader
         onNewVideo={handleResetVideo}
         onOpenExport={() => setIsExportOpen(true)}
+        onOpenWebMCP={() => setIsWebMCPOpen(true)}
         hasVideo={hasUploadedVideo}
       />
 
@@ -75,7 +78,7 @@ export const StudioShell: React.FC = () => {
         </main>
       )}
 
-      {/* Modals for Voiceover, Music, and Export */}
+      {/* Modals for Voiceover, Music, Export, and WebMCP Tools */}
       <VoiceoverPanel
         isOpen={isVoiceoverOpen}
         onClose={() => setIsVoiceoverOpen(false)}
@@ -89,6 +92,11 @@ export const StudioShell: React.FC = () => {
       <ExportModal
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
+      />
+
+      <WebMCPModal
+        isOpen={isWebMCPOpen}
+        onClose={() => setIsWebMCPOpen(false)}
       />
     </div>
   )
