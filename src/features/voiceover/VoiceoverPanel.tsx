@@ -42,7 +42,7 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
   const handleGenerate = async () => {
     if (!scriptText.trim()) return
     setIsGenerating(true)
-    setProgressMsg('Generating voiceover…')
+    setProgressMsg('Synthesizing speech…')
 
     try {
       const asset = await voiceoverService.generateVoiceover(
@@ -102,22 +102,23 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-dialog p-5 flex flex-col gap-4"
+        className="modal-dialog p-6 flex flex-col gap-4 bg-white border border-slate-200 shadow-2xl rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Mic className="w-4 h-4" style={{ color: 'var(--track-voice)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-              Voiceover
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-200">
+              <Mic className="w-4 h-4" />
+            </div>
+            <h2 className="text-sm font-bold text-slate-900">
+              Add Voiceover
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="btn btn-ghost text-xs p-1"
-            style={{ color: 'var(--muted-foreground)' }}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -125,37 +126,24 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
 
         {/* Generated State Card if asset is ready */}
         {generatedAsset && (
-          <div
-            className="p-3 rounded-md flex flex-col gap-2.5"
-            style={{
-              backgroundColor: 'var(--surface-elevated)',
-              border: '1px solid var(--border)',
-            }}
-          >
+          <div className="p-4 rounded-xl flex flex-col gap-3 bg-purple-50/70 border border-purple-200">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--foreground)' }}>
-                <Check className="w-3.5 h-3.5" style={{ color: 'var(--success)' }} />
+              <span className="font-bold flex items-center gap-1.5 text-purple-900">
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
                 Voiceover ({formatTime(generatedAsset.durationSec)})
               </span>
-              <span className="font-mono text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+              <span className="font-mono text-[10px] text-purple-700 font-medium bg-purple-100 px-2 py-0.5 rounded-md">
                 Added to track
               </span>
             </div>
 
             {/* Visual Bar representation */}
-            <div
-              className="h-4 rounded flex items-center px-2"
-              style={{
-                backgroundColor: 'rgba(168, 85, 247, 0.2)',
-                border: '1px solid var(--track-voice)',
-              }}
-            >
-              <div className="flex items-center gap-1 w-full overflow-hidden opacity-80">
-                {Array.from({ length: 28 }).map((_, i) => (
+            <div className="h-5 rounded-lg flex items-center px-2 bg-purple-100 border border-purple-300">
+              <div className="flex items-center gap-1 w-full overflow-hidden opacity-90">
+                {Array.from({ length: 32 }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-1.5 h-2 rounded-full"
-                    style={{ backgroundColor: 'var(--track-voice)' }}
+                    className="w-1.5 h-2.5 rounded-full bg-purple-600"
                   />
                 ))}
               </div>
@@ -166,43 +154,43 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
               <button
                 type="button"
                 onClick={handlePreview}
-                className="btn btn-secondary text-xs flex-1 py-1"
+                className="btn btn-secondary text-xs flex-1 py-1.5 rounded-lg font-medium text-slate-800"
               >
-                {previewing ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
-                <span>{previewing ? 'Pause' : 'Preview'}</span>
+                {previewing ? <Pause className="w-3 h-3 text-purple-600" /> : <Play className="w-3 h-3 fill-current text-purple-600" />}
+                <span>{previewing ? 'Pause' : 'Preview audio'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setGeneratedAsset(null)}
-                className="btn btn-secondary text-xs flex-1 py-1"
+                className="btn btn-secondary text-xs flex-1 py-1.5 rounded-lg font-medium text-slate-800"
               >
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw className="w-3 h-3 text-slate-500" />
                 <span>Replace</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleDelete}
-                className="btn btn-ghost text-xs p-1 text-red-400 hover:text-red-300"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                 title="Delete voiceover"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* Input & Form (shown when creating or replacing) */}
+        {/* Input & Form */}
         {!generatedAsset && (
           <>
             {/* Script Text */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between text-xs">
-                <label className="font-medium" style={{ color: 'var(--foreground)' }}>
+                <label className="font-semibold text-slate-800">
                   Script
                 </label>
-                <span className="font-mono text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+                <span className="font-mono text-[11px] text-slate-400">
                   {scriptText.split(/\s+/).filter(Boolean).length} words
                 </span>
               </div>
@@ -210,22 +198,17 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
                 value={scriptText}
                 onChange={(e) => setScriptText(e.target.value)}
                 placeholder="Enter your script..."
-                className="textarea text-xs h-20"
+                className="textarea text-xs h-24 rounded-xl border-slate-200"
               />
 
               {/* Template chips */}
-              <div className="flex flex-wrap gap-1 mt-1">
+              <div className="flex flex-wrap gap-1.5 mt-1">
                 {TEMPLATES.map((t, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setScriptText(t)}
-                    className="text-[10px] px-2 py-0.5 rounded transition-colors truncate max-w-[200px]"
-                    style={{
-                      backgroundColor: 'var(--surface-elevated)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--muted-foreground)',
-                    }}
+                    className="text-[10px] px-2.5 py-1 rounded-md transition-colors truncate max-w-[200px] bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium"
                   >
                     Template {idx + 1}
                   </button>
@@ -235,13 +218,13 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
 
             {/* Voice Selection */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
-                Voice
+              <label className="text-xs font-semibold text-slate-800">
+                Voice Persona
               </label>
               <select
                 value={voiceId}
                 onChange={(e) => setVoiceId(e.target.value)}
-                className="select text-xs"
+                className="select text-xs rounded-xl border-slate-200 py-2"
               >
                 {VOICES.map((v) => (
                   <option key={v.id} value={v.id}>
@@ -252,8 +235,8 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
             </div>
 
             {/* Speed slider */}
-            <div className="flex items-center justify-between gap-3">
-              <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <label className="text-xs font-medium text-slate-600">
                 Speed
               </label>
               <input
@@ -263,9 +246,9 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
                 step="0.05"
                 value={speed}
                 onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               />
-              <span className="text-xs font-mono w-8 text-right" style={{ color: 'var(--foreground)' }}>
+              <span className="text-xs font-mono font-semibold text-slate-800 w-8 text-right">
                 {speed.toFixed(2)}x
               </span>
             </div>
@@ -275,10 +258,10 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
               type="button"
               onClick={handleGenerate}
               disabled={!scriptText.trim() || isGenerating}
-              className="btn btn-primary text-xs py-2 w-full mt-1"
+              className="btn btn-primary text-xs py-2.5 w-full rounded-xl font-bold shadow-md mt-1"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>{isGenerating ? progressMsg || 'Generating voiceover…' : 'Generate'}</span>
+              <span>{isGenerating ? progressMsg || 'Synthesizing speech…' : 'Generate voiceover'}</span>
             </button>
           </>
         )}

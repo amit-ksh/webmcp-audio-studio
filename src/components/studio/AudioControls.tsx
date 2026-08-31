@@ -36,59 +36,48 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-3 w-full">
-      {/* Quick Action Button Bar */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-bold uppercase tracking-wider font-mono" style={{ color: 'var(--muted-foreground)' }}>
+    <div className="flex flex-col w-full border-t border-slate-200 bg-white">
+      {/* Audio Deck Header & Quick Actions */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50/80 border-b border-slate-200">
+        <span className="text-xs font-bold uppercase tracking-wider font-mono text-slate-800">
           Audio Tracks & Mix
-        </h3>
+        </span>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onOpenVoiceoverModal}
-            className="btn btn-secondary text-xs py-1.5 px-3 rounded-xl flex items-center gap-1.5 shadow-sm"
-            style={{
-              borderColor: 'rgba(168, 85, 247, 0.3)',
-              color: 'var(--track-voice)',
-            }}
+            className="btn text-xs py-1.5 px-3 rounded-lg shadow-2xs font-semibold flex items-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 hover:border-purple-300"
           >
-            <Mic className="w-3.5 h-3.5" />
+            <Mic className="w-3.5 h-3.5 text-purple-600" />
             <span>+ Add voiceover</span>
           </button>
 
           <button
             type="button"
             onClick={onOpenMusicModal}
-            className="btn btn-secondary text-xs py-1.5 px-3 rounded-xl flex items-center gap-1.5 shadow-sm"
-            style={{
-              borderColor: 'rgba(6, 182, 212, 0.3)',
-              color: 'var(--track-music)',
-            }}
+            className="btn text-xs py-1.5 px-3 rounded-lg shadow-2xs font-semibold flex items-center gap-1.5 bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 hover:border-cyan-300"
           >
-            <Music className="w-3.5 h-3.5" />
+            <Music className="w-3.5 h-3.5 text-cyan-600" />
             <span>+ Add background music</span>
           </button>
         </div>
       </div>
 
-      {/* Track Control Strips */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* Connected Track Control Strips */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 bg-white">
         {/* Voiceover Track Controls */}
         {voiceTrack && (
-          <div
-            className="studio-card p-3.5 rounded-xl flex flex-col justify-between gap-3"
-            style={{ backgroundColor: 'var(--surface)' }}
-          >
+          <div className="p-4 flex flex-col justify-between gap-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-purple-500/15 flex items-center justify-center text-purple-400">
+                <div className="w-6 h-6 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700">
                   <Mic className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-xs font-bold" style={{ color: 'var(--foreground)' }}>
+                <span className="text-xs font-bold text-slate-900">
                   Voiceover
                 </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-medium">
                   {voiceTrack.clips.length} {voiceTrack.clips.length === 1 ? 'clip' : 'clips'}
                 </span>
               </div>
@@ -97,7 +86,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 <button
                   type="button"
                   onClick={() => handleClearTrackClips(voiceTrack.id)}
-                  className="btn btn-ghost text-xs p-1 hover:text-red-400"
+                  className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                   title="Clear all voice clips"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -106,9 +95,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             </div>
 
             {/* Volume slider & mute */}
-            <div className="flex items-center justify-between gap-3 pt-1 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+            <div className="flex items-center justify-between gap-3 pt-1">
               <div className="flex-1 flex items-center gap-2">
-                <span className="text-[11px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+                <span className="text-[11px] font-mono font-medium text-slate-500">
                   Vol
                 </span>
                 <input
@@ -121,7 +110,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                   className="flex-1 cursor-pointer"
                   title={`Track Gain: ${formatDb(voiceTrack.gain)}`}
                 />
-                <span className="text-[10px] font-mono w-9 text-right" style={{ color: 'var(--muted-foreground)' }}>
+                <span className="text-[10px] font-mono font-semibold text-slate-600 w-9 text-right">
                   {formatDb(voiceTrack.gain)}
                 </span>
               </div>
@@ -134,7 +123,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 }`}
                 title={voiceTrack.muted ? 'Unmute' : 'Mute'}
               >
-                {voiceTrack.muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                {voiceTrack.muted ? <VolumeX className="w-3.5 h-3.5 text-red-600" /> : <Volume2 className="w-3.5 h-3.5" />}
                 <span>{voiceTrack.muted ? 'Muted' : 'Mute'}</span>
               </button>
             </div>
@@ -143,19 +132,16 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
 
         {/* Background Music Track Controls */}
         {musicTrack && (
-          <div
-            className="studio-card p-3.5 rounded-xl flex flex-col justify-between gap-3"
-            style={{ backgroundColor: 'var(--surface)' }}
-          >
+          <div className="p-4 flex flex-col justify-between gap-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-cyan-500/15 flex items-center justify-center text-cyan-400">
+                <div className="w-6 h-6 rounded-lg bg-cyan-100 flex items-center justify-center text-cyan-700">
                   <Music className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-xs font-bold" style={{ color: 'var(--foreground)' }}>
+                <span className="text-xs font-bold text-slate-900">
                   Background Music
                 </span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-700 border border-cyan-200 font-medium">
                   {musicTrack.clips.length} {musicTrack.clips.length === 1 ? 'clip' : 'clips'}
                 </span>
               </div>
@@ -164,7 +150,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 <button
                   type="button"
                   onClick={() => handleClearTrackClips(musicTrack.id)}
-                  className="btn btn-ghost text-xs p-1 hover:text-red-400"
+                  className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                   title="Clear all music clips"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -173,9 +159,9 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             </div>
 
             {/* Volume slider & mute */}
-            <div className="flex items-center justify-between gap-3 pt-1 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+            <div className="flex items-center justify-between gap-3 pt-1">
               <div className="flex-1 flex items-center gap-2">
-                <span className="text-[11px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
+                <span className="text-[11px] font-mono font-medium text-slate-500">
                   Vol
                 </span>
                 <input
@@ -188,7 +174,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                   className="flex-1 cursor-pointer"
                   title={`Track Gain: ${formatDb(musicTrack.gain)}`}
                 />
-                <span className="text-[10px] font-mono w-9 text-right" style={{ color: 'var(--muted-foreground)' }}>
+                <span className="text-[10px] font-mono font-semibold text-slate-600 w-9 text-right">
                   {formatDb(musicTrack.gain)}
                 </span>
               </div>
@@ -201,7 +187,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
                 }`}
                 title={musicTrack.muted ? 'Unmute' : 'Mute'}
               >
-                {musicTrack.muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                {musicTrack.muted ? <VolumeX className="w-3.5 h-3.5 text-red-600" /> : <Volume2 className="w-3.5 h-3.5" />}
                 <span>{musicTrack.muted ? 'Muted' : 'Mute'}</span>
               </button>
             </div>

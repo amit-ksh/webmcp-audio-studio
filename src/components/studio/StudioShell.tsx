@@ -43,40 +43,47 @@ export const StudioShell: React.FC = () => {
 
   return (
     <div className="studio-container">
-      {/* Studio Header */}
-      <StudioHeader onNewVideo={handleResetVideo} />
+      {/* Studio Top Header */}
+      <StudioHeader
+        onNewVideo={handleResetVideo}
+        onOpenExport={() => setIsExportOpen(true)}
+        hasVideo={hasUploadedVideo}
+      />
 
       {/* Main Studio Viewport */}
       {!hasUploadedVideo ? (
-        /* Section 4: Initial Upload State */
+        /* Initial Upload State: Blended Dropzone */
         <VideoUploader onUploaded={() => {}} />
       ) : (
-        /* Section 5 to 11: Video & Audio Studio Workspace */
-        <main className="flex flex-col gap-4 w-full pb-8">
-          {/* Video Preview with Integrated Playback Controls */}
-          <VideoPreview
-            videoRef={videoRef}
-            onNewVideo={handleResetVideo}
-          />
+        /* Connected Studio Workbench */
+        <main className="flex flex-col gap-4 w-full">
+          {/* Unified Connected Workbench Box */}
+          <div className="studio-workbench">
+            {/* 1. Top Video Stage */}
+            <VideoPreview
+              videoRef={videoRef}
+              onNewVideo={handleResetVideo}
+            />
 
-          {/* Timeline */}
-          <Timeline />
+            {/* 2. Middle Connected Timeline */}
+            <Timeline />
 
-          {/* Audio Tracks & Controls */}
-          <AudioControls
-            onOpenVoiceoverModal={() => setIsVoiceoverOpen(true)}
-            onOpenMusicModal={() => setIsMusicOpen(true)}
-          />
+            {/* 3. Bottom Connected Audio Deck */}
+            <AudioControls
+              onOpenVoiceoverModal={() => setIsVoiceoverOpen(true)}
+              onOpenMusicModal={() => setIsMusicOpen(true)}
+            />
+          </div>
 
-          {/* Primary Export Button */}
-          <div className="pt-2">
+          {/* Primary Big Export Button */}
+          <div className="w-full">
             <button
               type="button"
               onClick={() => setIsExportOpen(true)}
-              className="btn btn-primary text-sm py-2.5 w-full font-semibold shadow-sm flex items-center justify-center gap-2"
+              className="btn btn-primary text-sm py-3.5 w-full rounded-xl font-bold shadow-md flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] transition-all"
             >
               <Download className="w-4 h-4" />
-              <span>Export</span>
+              <span>Export Final Video & Audio</span>
             </button>
           </div>
         </main>

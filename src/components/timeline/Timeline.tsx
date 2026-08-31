@@ -18,7 +18,7 @@ export const Timeline: React.FC = () => {
   const activeVideo = videos.find((v) => v.id === selectedVideoId)
   const videoDuration = activeVideo?.durationSec || currentProject.durationSec || 60
   const totalDuration = Math.max(videoDuration, currentProject.durationSec, 30)
-  const totalWidthPx = Math.max(720, totalDuration * zoom)
+  const totalWidthPx = Math.max(760, totalDuration * zoom)
 
   const voiceTrack = currentProject.tracks.find((t) => t.type === 'voiceover')
   const musicTrack = currentProject.tracks.find((t) => t.type === 'music')
@@ -48,26 +48,22 @@ export const Timeline: React.FC = () => {
   }
 
   return (
-    <div className="studio-card p-4 flex flex-col gap-3 w-full">
-      {/* Timeline Card Header */}
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col w-full border-t border-slate-200 bg-white">
+      {/* Timeline Section Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50/80 border-b border-slate-200">
         {/* Left Title */}
         <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-blue-400" />
-          <span className="text-xs font-bold tracking-tight uppercase font-mono" style={{ color: 'var(--foreground)' }}>
+          <Sliders className="w-4 h-4 text-blue-600" />
+          <span className="text-xs font-bold uppercase tracking-wider font-mono text-slate-800">
             Timeline
+          </span>
+          <span className="text-[11px] font-mono text-slate-400">
+            ({currentProject.tracks.length} tracks)
           </span>
         </div>
 
-        {/* Center Current Time Pill (as seen in Image 2) */}
-        <div
-          className="px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider"
-          style={{
-            backgroundColor: 'rgba(59, 130, 246, 0.15)',
-            border: '1px solid rgba(59, 130, 246, 0.35)',
-            color: '#60a5fa',
-          }}
-        >
+        {/* Center Current Time Pill */}
+        <div className="px-3 py-0.5 rounded-full text-xs font-mono font-bold tracking-wider bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
           {formatTime(currentTime)}
         </div>
 
@@ -76,7 +72,7 @@ export const Timeline: React.FC = () => {
           <button
             type="button"
             onClick={() => setZoom(zoom - 10)}
-            className="btn btn-ghost text-xs p-1"
+            className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
             title="Zoom out"
           >
             <ZoomOut className="w-3.5 h-3.5" />
@@ -96,7 +92,7 @@ export const Timeline: React.FC = () => {
           <button
             type="button"
             onClick={() => setZoom(zoom + 10)}
-            className="btn btn-ghost text-xs p-1"
+            className="p-1 rounded text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition-colors"
             title="Zoom in"
           >
             <ZoomIn className="w-3.5 h-3.5" />
@@ -104,55 +100,31 @@ export const Timeline: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Track Editor Surface */}
-      <div
-        className="rounded-xl overflow-hidden flex"
-        style={{
-          backgroundColor: 'var(--surface-elevated)',
-          border: '1px solid var(--border)',
-        }}
-      >
-        {/* Left Track Headers Column */}
-        <div
-          className="w-28 flex flex-col flex-shrink-0 select-none z-10"
-          style={{
-            backgroundColor: 'var(--surface)',
-            borderRight: '1px solid var(--border)',
-          }}
-        >
-          {/* Header Spacer for Ruler */}
-          <div
-            className="h-7 flex items-center px-3 text-[10px] font-mono font-bold uppercase"
-            style={{
-              borderBottom: '1px solid var(--border)',
-              color: 'var(--muted-foreground)',
-            }}
-          >
+      {/* Main Track Editor Area */}
+      <div className="flex w-full overflow-hidden bg-slate-50/30">
+        {/* Left Track Column Headers */}
+        <div className="w-32 flex flex-col flex-shrink-0 select-none z-10 bg-white border-r border-slate-200 shadow-2xs">
+          {/* Header Spacer for Time Ruler */}
+          <div className="h-7 flex items-center px-3 text-[10px] font-mono font-bold uppercase text-slate-400 border-b border-slate-200 bg-slate-50/60">
             Tracks
           </div>
 
           {/* Track 1: Video */}
-          <div
-            className="h-10 flex items-center px-3 gap-2"
-            style={{ borderBottom: '1px solid var(--border-subtle)' }}
-          >
-            <Video className="w-3.5 h-3.5 text-sky-400" />
-            <span className="text-xs font-semibold text-sky-400">Video</span>
+          <div className="h-10 flex items-center px-3 gap-2 border-b border-slate-100">
+            <Video className="w-3.5 h-3.5 text-sky-600" />
+            <span className="text-xs font-semibold text-sky-950">Video</span>
           </div>
 
           {/* Track 2: Voiceover */}
-          <div
-            className="h-14 flex items-center px-3 gap-2"
-            style={{ borderBottom: '1px solid var(--border-subtle)' }}
-          >
-            <Mic className="w-3.5 h-3.5 text-purple-400" />
-            <span className="text-xs font-semibold text-purple-400">Voice</span>
+          <div className="h-14 flex items-center px-3 gap-2 border-b border-slate-100">
+            <Mic className="w-3.5 h-3.5 text-purple-600" />
+            <span className="text-xs font-semibold text-purple-950">Voice</span>
           </div>
 
           {/* Track 3: Music */}
           <div className="h-14 flex items-center px-3 gap-2">
-            <Music className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="text-xs font-semibold text-cyan-400">BGM</span>
+            <Music className="w-3.5 h-3.5 text-cyan-600" />
+            <span className="text-xs font-semibold text-cyan-950">Music</span>
           </div>
         </div>
 
@@ -164,57 +136,36 @@ export const Timeline: React.FC = () => {
         >
           <div style={{ width: `${totalWidthPx}px`, minWidth: '100%' }}>
             {/* Time Ruler */}
-            <div
-              className="h-7 flex items-end relative"
-              style={{
-                backgroundColor: 'var(--surface)',
-                borderBottom: '1px solid var(--border)',
-              }}
-            >
+            <div className="h-7 flex items-end relative bg-slate-50/60 border-b border-slate-200">
               {ticks.map((sec) => (
                 <div
                   key={sec}
                   className="absolute top-0 bottom-0 flex flex-col justify-end pointer-events-none"
                   style={{ left: `${sec * zoom}px` }}
                 >
-                  <span
-                    className="text-[9px] font-mono pl-1 pb-0.5 leading-none"
-                    style={{ color: 'var(--muted-foreground)' }}
-                  >
+                  <span className="text-[9px] font-mono text-slate-400 pl-1 pb-0.5 leading-none">
                     {formatTime(sec).slice(0, 5)}
                   </span>
-                  <div className="w-[1px] h-2" style={{ backgroundColor: 'var(--border)' }} />
+                  <div className="w-[1px] h-2 bg-slate-300" />
                 </div>
               ))}
             </div>
 
-            {/* Playhead Vertical Line */}
+            {/* Playhead Indicator */}
             <div
               className="absolute top-0 bottom-0 z-20 pointer-events-none transition-none"
               style={{ left: `${currentTime * zoom}px` }}
             >
-              <div
-                className="w-3 h-3 rotate-45 -ml-[5px] -mt-[4px] shadow-md"
-                style={{ backgroundColor: '#3b82f6' }}
-              />
-              <div className="w-[2px] h-full shadow-sm" style={{ backgroundColor: '#3b82f6' }} />
+              {/* Playhead Pin */}
+              <div className="w-2.5 h-2.5 rotate-45 -ml-[4px] -mt-[3px] bg-blue-600 shadow-xs rounded-xs" />
+              <div className="w-[1.5px] h-full bg-blue-600 shadow-xs" />
             </div>
 
             {/* Lane 1: Video Track Bar */}
-            <div
-              className="relative h-10 flex items-center px-2"
-              style={{
-                borderBottom: '1px solid var(--border-subtle)',
-              }}
-            >
+            <div className="relative h-10 flex items-center px-2 border-b border-slate-100">
               <div
-                className="h-6 rounded-md flex items-center px-2.5 text-[10px] font-mono font-semibold"
-                style={{
-                  width: `${videoDuration * zoom}px`,
-                  backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                  border: '1px solid rgba(56, 189, 248, 0.4)',
-                  color: 'var(--track-video)',
-                }}
+                className="h-6 rounded-md flex items-center px-2.5 text-[10px] font-mono font-semibold bg-sky-50 border border-sky-300 text-sky-700 shadow-2xs"
+                style={{ width: `${videoDuration * zoom}px` }}
               >
                 <span className="truncate">VIDEO • {formatTime(videoDuration)}</span>
               </div>
@@ -237,16 +188,13 @@ export const Timeline: React.FC = () => {
                   voiceClips.map((vc, idx) => (
                     <div
                       key={idx}
-                      className="absolute top-0 bottom-0 pointer-events-none z-10"
+                      className="absolute top-0 bottom-0 pointer-events-none z-10 bg-amber-100/50 border-l border-r border-dashed border-amber-300/80"
                       style={{
                         left: `${vc.start * zoom}px`,
                         width: `${Math.max(10, (vc.end - vc.start) * zoom)}px`,
-                        backgroundColor: 'rgba(245, 158, 11, 0.12)',
-                        borderLeft: '1px dashed rgba(245, 158, 11, 0.4)',
-                        borderRight: '1px dashed rgba(245, 158, 11, 0.4)',
                       }}
                     >
-                      <span className="text-[8px] font-mono p-1 block" style={{ color: 'var(--warning)' }}>
+                      <span className="text-[8px] font-mono text-amber-700 font-semibold p-1 block">
                         Ducked
                       </span>
                     </div>

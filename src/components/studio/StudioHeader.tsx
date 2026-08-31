@@ -1,34 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import { Sparkles, Sun, Moon, Plus, Bot } from 'lucide-react'
+import React from 'react'
+import { Sparkles, Plus, Bot, Download } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
 import { useVideoStore } from '../../stores/video-store'
 import { useAgentStore } from '../../stores/agent-store'
 
 interface StudioHeaderProps {
   onNewVideo?: () => void
+  onOpenExport?: () => void
+  hasVideo?: boolean
 }
 
-export const StudioHeader: React.FC<StudioHeaderProps> = ({ onNewVideo }) => {
+export const StudioHeader: React.FC<StudioHeaderProps> = ({
+  onNewVideo,
+  onOpenExport,
+  hasVideo,
+}) => {
   const { createNewProject } = useProjectStore()
   const { selectVideo } = useVideoStore()
   const isAgentActive = useAgentStore((state) => state.isAgentActive)
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-
-  useEffect(() => {
-    const savedTheme = (localStorage.getItem('studio_theme') as 'dark' | 'light') || 'dark'
-    setTheme(savedTheme)
-    document.documentElement.setAttribute('data-theme', savedTheme)
-  }, [])
-
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark'
-    setTheme(nextTheme)
-    localStorage.setItem('studio_theme', nextTheme)
-    document.documentElement.setAttribute('data-theme', nextTheme)
-  }
 
   const handleNew = async () => {
-    if (window.confirm('Start a new project? Current video and audio will be cleared.')) {
+    if (window.confirm('Start a new project? Current timeline and video will be cleared.')) {
       await selectVideo(null)
       await createNewProject('New Studio Project')
       onNewVideo?.()
@@ -37,36 +29,29 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({ onNewVideo }) => {
 
   return (
     <header className="header-bar">
-      {/* Left: Brand / Logo */}
+      {/* Left: Brand */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-500 shadow-sm">
+        <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shadow-xs">
           <Sparkles className="w-4 h-4" />
         </div>
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold tracking-tight text-white dark:text-white" style={{ color: 'var(--foreground)' }}>
-              Audio Studio
-            </span>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              WebMCP
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold tracking-tight text-slate-900">
+            Audio Studio
+          </span>
+          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+            WebMCP
+          </span>
         </div>
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {isAgentActive && (
           <div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono"
-            style={{
-              background: 'rgba(6, 182, 212, 0.12)',
-              color: 'var(--track-music)',
-              border: '1px solid rgba(6, 182, 212, 0.25)',
-            }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-cyan-50 text-cyan-700 border border-cyan-200"
             title="WebMCP agent is connected and monitoring commands"
           >
-            <Bot className="w-3.5 h-3.5" />
+            <Bot className="w-3.5 h-3.5 text-cyan-600" />
             <span>Agent Active</span>
           </div>
         )}
@@ -74,22 +59,23 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({ onNewVideo }) => {
         <button
           type="button"
           onClick={handleNew}
-          className="btn btn-secondary text-xs py-1.5 px-3"
+          className="btn btn-secondary text-xs py-1.5 px-3 rounded-lg shadow-2xs font-medium text-slate-700"
           title="Start fresh project"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-3.5 h-3.5 text-slate-500" />
           <span>New</span>
         </button>
 
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="btn btn-secondary text-xs py-1.5 px-3"
-          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} theme`}
-        >
-          {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-          <span className="capitalize">{theme === 'dark' ? 'Light' : 'Dark'}</span>
-        </button>
+        {hasVideo && onOpenExport && (
+          <button
+            type="button"
+            onClick={onOpenExport}
+            className="btn btn-primary text-xs py-1.5 px-3.5 rounded-lg shadow-sm font-semibold flex items-center gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export</span>
+          </button>
+        )}
       </div>
     </header>
   )

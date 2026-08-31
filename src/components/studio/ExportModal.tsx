@@ -111,22 +111,23 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-dialog p-5 flex flex-col gap-4"
+        className="modal-dialog p-6 flex flex-col gap-5 bg-white border border-slate-200 shadow-2xl rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Download className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-              Export
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200">
+              <Download className="w-4 h-4" />
+            </div>
+            <h2 className="text-sm font-bold text-slate-900">
+              Export Media
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="btn btn-ghost text-xs p-1"
-            style={{ color: 'var(--muted-foreground)' }}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -134,25 +135,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
 
         {/* Ready Result State */}
         {readyResult ? (
-          <div
-            className="p-5 rounded-md flex flex-col items-center justify-center text-center gap-3"
-            style={{
-              backgroundColor: 'var(--surface-elevated)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success)' }}
-            >
-              <Check className="w-5 h-5" />
+          <div className="p-6 rounded-xl flex flex-col items-center justify-center text-center gap-3.5 bg-emerald-50/70 border border-emerald-200">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-emerald-100 text-emerald-600 shadow-2xs">
+              <Check className="w-6 h-6" />
             </div>
 
-            <div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
-                {readyResult.isVideo ? 'Your video is ready.' : 'Your audio is ready.'}
+            <div className="flex flex-col gap-1">
+              <p className="text-base font-bold text-slate-900">
+                {readyResult.isVideo ? 'Your video is ready!' : 'Your audio is ready!'}
               </p>
-              <p className="text-[11px] font-mono mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+              <p className="text-xs font-mono text-slate-500">
                 {readyResult.filename} ({(readyResult.blob.size / 1024 / 1024).toFixed(2)} MB)
               </p>
             </div>
@@ -160,38 +152,29 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             <button
               type="button"
               onClick={handleManualDownload}
-              className="btn btn-primary text-xs px-4 py-2 mt-1 w-full"
+              className="btn btn-primary text-xs px-5 py-2.5 mt-1 w-full rounded-xl font-semibold shadow-sm"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>{readyResult.isVideo ? 'Download video' : 'Download audio'}</span>
+              <Download className="w-4 h-4" />
+              <span>{readyResult.isVideo ? 'Download video again' : 'Download audio again'}</span>
             </button>
           </div>
         ) : isProcessing ? (
           /* Processing State */
-          <div
-            className="p-6 rounded-md flex flex-col items-center justify-center gap-3 text-center"
-            style={{
-              backgroundColor: 'var(--surface-elevated)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            <Loader2 className="w-7 h-7 animate-spin" style={{ color: 'var(--accent)' }} />
-            <div>
-              <p className="text-xs font-semibold" style={{ color: 'var(--foreground)' }}>
-                {progressMessage || 'Preparing your video…'}
+          <div className="p-8 rounded-xl flex flex-col items-center justify-center gap-3.5 text-center bg-slate-50 border border-slate-200">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-bold text-slate-900">
+                {progressMessage || 'Preparing your export…'}
               </p>
-              <p className="text-[10px] font-mono mt-1" style={{ color: 'var(--muted-foreground)' }}>
+              <p className="text-xs font-mono text-slate-500">
                 {progress}% complete
               </p>
             </div>
 
-            <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden mt-1" style={{ backgroundColor: 'var(--border)' }}>
+            <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden mt-1">
               <div
-                className="h-full transition-all duration-300"
-                style={{
-                  width: `${progress}%`,
-                  backgroundColor: 'var(--accent)',
-                }}
+                className="h-full bg-blue-600 transition-all duration-300 rounded-full"
+                style={{ width: `${progress}%` }}
               />
             </div>
           </div>
@@ -199,104 +182,101 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           /* Export Selection Form */
           <>
             {/* Target Options */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {/* Video Option */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wider font-mono" style={{ color: 'var(--muted-foreground)' }}>
-                  Video
+                <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-400">
+                  Video Output
                 </span>
 
                 <label
-                  className={`flex items-center gap-2.5 p-2.5 rounded-md cursor-pointer transition-all ${
-                    exportTarget === 'video_audio' ? 'font-semibold' : ''
+                  className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
+                    exportTarget === 'video_audio'
+                      ? 'bg-blue-50/70 border-blue-500 shadow-2xs font-semibold'
+                      : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}
-                  style={{
-                    backgroundColor: exportTarget === 'video_audio' ? 'var(--surface-hover)' : 'var(--surface-elevated)',
-                    border: `1px solid ${exportTarget === 'video_audio' ? 'var(--accent)' : 'var(--border)'}`,
-                  }}
                 >
                   <input
                     type="radio"
                     name="exportTarget"
                     checked={exportTarget === 'video_audio'}
                     onChange={() => setExportTarget('video_audio')}
-                    className="accent-blue-500"
+                    className="accent-blue-600"
                   />
-                  <Film className="w-3.5 h-3.5" style={{ color: 'var(--track-video)' }} />
-                  <span className="text-xs" style={{ color: 'var(--foreground)' }}>
-                    Video + Audio
-                  </span>
+                  <Film className="w-4 h-4 text-sky-600" />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-slate-900">
+                      Video + Master Audio
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Combines video with voiceover & background music mix
+                    </span>
+                  </div>
                 </label>
               </div>
 
               {/* Audio Options */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wider font-mono" style={{ color: 'var(--muted-foreground)' }}>
-                  Audio
+                <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-400">
+                  Audio Exports
                 </span>
 
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   <label
-                    className={`flex items-center gap-2.5 p-2.5 rounded-md cursor-pointer transition-all ${
-                      exportTarget === 'all_audio' ? 'font-semibold' : ''
+                    className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border ${
+                      exportTarget === 'all_audio'
+                        ? 'bg-blue-50/70 border-blue-500 shadow-2xs font-semibold'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
-                    style={{
-                      backgroundColor: exportTarget === 'all_audio' ? 'var(--surface-hover)' : 'var(--surface-elevated)',
-                      border: `1px solid ${exportTarget === 'all_audio' ? 'var(--accent)' : 'var(--border)'}`,
-                    }}
                   >
                     <input
                       type="radio"
                       name="exportTarget"
                       checked={exportTarget === 'all_audio'}
                       onChange={() => setExportTarget('all_audio')}
-                      className="accent-blue-500"
+                      className="accent-blue-600"
                     />
-                    <Music className="w-3.5 h-3.5" style={{ color: 'var(--track-music)' }} />
-                    <span className="text-xs" style={{ color: 'var(--foreground)' }}>
-                      All audio
+                    <Music className="w-4 h-4 text-cyan-600" />
+                    <span className="text-xs text-slate-800 font-medium">
+                      All audio master mixdown (WAV)
                     </span>
                   </label>
 
                   <label
-                    className={`flex items-center gap-2.5 p-2.5 rounded-md cursor-pointer transition-all ${
-                      exportTarget === 'voiceover_only' ? 'font-semibold' : ''
+                    className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border ${
+                      exportTarget === 'voiceover_only'
+                        ? 'bg-blue-50/70 border-blue-500 shadow-2xs font-semibold'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
-                    style={{
-                      backgroundColor: exportTarget === 'voiceover_only' ? 'var(--surface-hover)' : 'var(--surface-elevated)',
-                      border: `1px solid ${exportTarget === 'voiceover_only' ? 'var(--accent)' : 'var(--border)'}`,
-                    }}
                   >
                     <input
                       type="radio"
                       name="exportTarget"
                       checked={exportTarget === 'voiceover_only'}
                       onChange={() => setExportTarget('voiceover_only')}
-                      className="accent-blue-500"
+                      className="accent-blue-600"
                     />
-                    <span className="text-xs" style={{ color: 'var(--foreground)' }}>
-                      Voiceover only
+                    <span className="text-xs text-slate-800 font-medium">
+                      Voiceover track only
                     </span>
                   </label>
 
                   <label
-                    className={`flex items-center gap-2.5 p-2.5 rounded-md cursor-pointer transition-all ${
-                      exportTarget === 'music_only' ? 'font-semibold' : ''
+                    className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all border ${
+                      exportTarget === 'music_only'
+                        ? 'bg-blue-50/70 border-blue-500 shadow-2xs font-semibold'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
                     }`}
-                    style={{
-                      backgroundColor: exportTarget === 'music_only' ? 'var(--surface-hover)' : 'var(--surface-elevated)',
-                      border: `1px solid ${exportTarget === 'music_only' ? 'var(--accent)' : 'var(--border)'}`,
-                    }}
                   >
                     <input
                       type="radio"
                       name="exportTarget"
                       checked={exportTarget === 'music_only'}
                       onChange={() => setExportTarget('music_only')}
-                      className="accent-blue-500"
+                      className="accent-blue-600"
                     />
-                    <span className="text-xs" style={{ color: 'var(--foreground)' }}>
-                      Background music only
+                    <span className="text-xs text-slate-800 font-medium">
+                      Background music track only
                     </span>
                   </label>
                 </div>
@@ -304,8 +284,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             </div>
 
             {/* Format Selection */}
-            <div className="flex items-center justify-between gap-3 pt-1 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-              <label className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
+              <label className="text-xs font-semibold text-slate-700">
                 Format
               </label>
 
@@ -313,33 +293,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
                 <select
                   value={videoFormat}
                   onChange={(e) => setVideoFormat(e.target.value as VideoFormat)}
-                  className="select text-xs w-28 py-1"
+                  className="select text-xs w-32 py-1.5 rounded-lg border-slate-300"
                 >
-                  <option value="mp4">MP4</option>
-                  <option value="webm">WebM</option>
+                  <option value="mp4">MP4 (H.264)</option>
+                  <option value="webm">WebM (VP9)</option>
                 </select>
               ) : (
                 <select
                   value={audioFormat}
                   onChange={(e) => setAudioFormat(e.target.value as AudioFormat)}
-                  className="select text-xs w-28 py-1"
+                  className="select text-xs w-32 py-1.5 rounded-lg border-slate-300"
                 >
-                  <option value="wav">WAV</option>
+                  <option value="wav">WAV (16-bit PCM)</option>
                   <option value="mp3">MP3</option>
                 </select>
               )}
             </div>
 
             {error && (
-              <div
-                className="p-2.5 rounded-md text-xs flex items-center gap-2"
-                style={{
-                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.25)',
-                  color: 'var(--danger)',
-                }}
-              >
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <div className="p-3 rounded-xl text-xs flex items-center gap-2 bg-red-50 border border-red-200 text-red-700">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
                 <span>{error}</span>
               </div>
             )}
@@ -348,10 +321,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
             <button
               type="button"
               onClick={handleExport}
-              className="btn btn-primary text-xs py-2 w-full mt-1"
+              className="btn btn-primary text-xs py-2.5 w-full rounded-xl font-bold shadow-md"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>{isVideoTarget ? 'Export video' : 'Export audio'}</span>
+              <Download className="w-4 h-4" />
+              <span>{isVideoTarget ? 'Export video file' : 'Export audio file'}</span>
             </button>
           </>
         )}

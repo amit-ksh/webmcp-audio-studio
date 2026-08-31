@@ -137,19 +137,13 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
   const maxDuration = Math.max(durationSec, currentProject?.durationSec || 1, 1)
 
   return (
-    <div
-      className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl"
-      style={{
-        backgroundColor: 'var(--surface-elevated)',
-        border: '1px solid var(--border)',
-      }}
-    >
-      {/* Transport controls */}
-      <div className="flex items-center gap-1.5">
+    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-50 border-t border-slate-200">
+      {/* Left Transport controls */}
+      <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => handleSkip(-5)}
-          className="btn btn-ghost text-xs p-1.5 rounded-lg"
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors"
           title="Rewind 5s"
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -158,42 +152,35 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
         <button
           type="button"
           onClick={handleTogglePlay}
-          className="btn btn-primary w-8 h-8 p-0 rounded-full flex items-center justify-center shadow-md"
+          className="w-9 h-9 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all"
           title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
         >
           {isPlaying ? (
-            <Pause className="w-3.5 h-3.5 fill-current" />
+            <Pause className="w-4 h-4 fill-current" />
           ) : (
-            <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+            <Play className="w-4 h-4 fill-current ml-0.5" />
           )}
         </button>
 
         <button
           type="button"
           onClick={() => handleSkip(5)}
-          className="btn btn-ghost text-xs p-1.5 rounded-lg"
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors"
           title="Forward 5s"
         >
           <RotateCw className="w-3.5 h-3.5" />
         </button>
 
-        {/* Time Stamp Display */}
-        <div
-          className="px-2.5 py-1 rounded-md text-xs font-mono font-medium tracking-tight ml-1.5 flex items-center gap-1"
-          style={{
-            backgroundColor: 'var(--surface)',
-            border: '1px solid var(--border)',
-            color: 'var(--foreground)',
-          }}
-        >
-          <span className="font-semibold text-blue-400">{formatTime(currentTime)}</span>
-          <span style={{ color: 'var(--muted-foreground)' }}>/</span>
-          <span style={{ color: 'var(--muted-foreground)' }}>{formatTime(maxDuration)}</span>
+        {/* Monospace Time Stamp Pill */}
+        <div className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold tracking-tight ml-1 bg-white border border-slate-200 shadow-2xs flex items-center gap-1.5">
+          <span className="text-blue-600">{formatTime(currentTime)}</span>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-500">{formatTime(maxDuration)}</span>
         </div>
       </div>
 
-      {/* Scrubber slider */}
-      <div className="flex-1 mx-2">
+      {/* Center Scrubber slider */}
+      <div className="flex-1 mx-3 flex items-center">
         <input
           type="range"
           min={0}
@@ -206,29 +193,21 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
         />
       </div>
 
-      {/* Right: Aspect ratio, Volume, Fullscreen */}
+      {/* Right Controls */}
       <div className="flex items-center gap-2">
-        <span
-          className="text-[11px] font-mono px-2 py-0.5 rounded-md"
-          style={{
-            backgroundColor: 'var(--surface)',
-            border: '1px solid var(--border)',
-            color: 'var(--muted-foreground)',
-          }}
-        >
+        <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-500 shadow-2xs">
           16:9
         </span>
 
-        <div className="flex items-center gap-1.5 pl-1.5 border-l" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
           <button
             type="button"
             onClick={toggleMute}
-            className="btn btn-ghost text-xs p-1.5"
-            style={{ color: 'var(--muted-foreground)' }}
+            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors"
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted || masterVolume === 0 ? (
-              <VolumeX className="w-4 h-4 text-red-400" />
+              <VolumeX className="w-4 h-4 text-red-500" />
             ) : (
               <Volume2 className="w-4 h-4" />
             )}
@@ -249,8 +228,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({ videoRef, du
         <button
           type="button"
           onClick={handleFullscreen}
-          className="btn btn-ghost text-xs p-1.5 ml-0.5"
-          style={{ color: 'var(--muted-foreground)' }}
+          className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-colors ml-0.5"
           title="Fullscreen"
         >
           <Maximize2 className="w-3.5 h-3.5" />

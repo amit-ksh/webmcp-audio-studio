@@ -65,7 +65,7 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
   const handleGenerate = async () => {
     if (!prompt.trim()) return
     setIsGenerating(true)
-    setProgressMsg('Generating music…')
+    setProgressMsg('Generating backing track…')
 
     try {
       const asset = await musicService.generateMusic(
@@ -170,22 +170,23 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-dialog p-5 flex flex-col gap-4"
+        className="modal-dialog p-6 flex flex-col gap-4 bg-white border border-slate-200 shadow-2xl rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Music className="w-4 h-4" style={{ color: 'var(--track-music)' }} />
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center border border-cyan-200">
+              <Music className="w-4 h-4" />
+            </div>
+            <h2 className="text-sm font-bold text-slate-900">
               Background Music
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="btn btn-ghost text-xs p-1"
-            style={{ color: 'var(--muted-foreground)' }}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -193,37 +194,24 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
 
         {/* Generated State Card */}
         {generatedAsset && (
-          <div
-            className="p-3 rounded-md flex flex-col gap-2.5"
-            style={{
-              backgroundColor: 'var(--surface-elevated)',
-              border: '1px solid var(--border)',
-            }}
-          >
+          <div className="p-4 rounded-xl flex flex-col gap-3 bg-cyan-50/70 border border-cyan-200">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--foreground)' }}>
-                <Check className="w-3.5 h-3.5" style={{ color: 'var(--success)' }} />
+              <span className="font-bold flex items-center gap-1.5 text-cyan-950">
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
                 Background Track ({formatTime(generatedAsset.durationSec)})
               </span>
-              <span className="font-mono text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+              <span className="font-mono text-[10px] text-cyan-700 font-medium bg-cyan-100 px-2 py-0.5 rounded-md">
                 Added to track
               </span>
             </div>
 
             {/* Visual Bar representation */}
-            <div
-              className="h-4 rounded flex items-center px-2"
-              style={{
-                backgroundColor: 'rgba(6, 182, 212, 0.2)',
-                border: '1px solid var(--track-music)',
-              }}
-            >
-              <div className="flex items-center gap-1 w-full overflow-hidden opacity-80">
-                {Array.from({ length: 28 }).map((_, i) => (
+            <div className="h-5 rounded-lg flex items-center px-2 bg-cyan-100 border border-cyan-300">
+              <div className="flex items-center gap-1 w-full overflow-hidden opacity-90">
+                {Array.from({ length: 32 }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-1.5 h-2 rounded-full"
-                    style={{ backgroundColor: 'var(--track-music)' }}
+                    className="w-1.5 h-2.5 rounded-full bg-cyan-600"
                   />
                 ))}
               </div>
@@ -234,28 +222,28 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={handlePreview}
-                className="btn btn-secondary text-xs flex-1 py-1"
+                className="btn btn-secondary text-xs flex-1 py-1.5 rounded-lg font-medium text-slate-800"
               >
-                {previewing ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
-                <span>{previewing ? 'Pause' : 'Preview'}</span>
+                {previewing ? <Pause className="w-3 h-3 text-cyan-600" /> : <Play className="w-3 h-3 fill-current text-cyan-600" />}
+                <span>{previewing ? 'Pause' : 'Preview audio'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setGeneratedAsset(null)}
-                className="btn btn-secondary text-xs flex-1 py-1"
+                className="btn btn-secondary text-xs flex-1 py-1.5 rounded-lg font-medium text-slate-800"
               >
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw className="w-3 h-3 text-slate-500" />
                 <span>Replace</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleDelete}
-                className="btn btn-ghost text-xs p-1 text-red-400 hover:text-red-300"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                 title="Delete track"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -268,7 +256,11 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setTab('ai')}
-                className={`btn text-xs flex-1 py-1.5 ${tab === 'ai' ? 'btn-primary' : 'btn-secondary'}`}
+                className={`btn text-xs flex-1 py-2 rounded-xl font-semibold ${
+                  tab === 'ai'
+                    ? 'btn-primary'
+                    : 'btn-secondary text-slate-700'
+                }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Generate with AI</span>
@@ -277,10 +269,14 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setTab('upload')}
-                className={`btn text-xs flex-1 py-1.5 ${tab === 'upload' ? 'btn-primary' : 'btn-secondary'}`}
+                className={`btn text-xs flex-1 py-2 rounded-xl font-semibold ${
+                  tab === 'upload'
+                    ? 'btn-primary'
+                    : 'btn-secondary text-slate-700'
+                }`}
               >
                 <Upload className="w-3.5 h-3.5" />
-                <span>Upload audio</span>
+                <span>Upload audio file</span>
               </button>
             </div>
 
@@ -288,36 +284,28 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
               <>
                 {/* AI Prompt Input */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
+                  <label className="text-xs font-semibold text-slate-800">
                     Describe the music
                   </label>
                   <textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="calm cinematic background music"
-                    className="textarea text-xs h-16"
+                    className="textarea text-xs h-20 rounded-xl border-slate-200"
                   />
 
                   {/* Preset mood chips */}
-                  <div className="flex flex-wrap gap-1 mt-1">
+                  <div className="flex flex-wrap gap-1.5 mt-1">
                     {MOOD_OPTIONS.map((m) => (
                       <button
                         key={m.id}
                         type="button"
                         onClick={() => handleMoodSelect(m.id)}
-                        className={`text-[10px] px-2 py-0.5 rounded transition-colors ${
-                          selectedMood === m.id ? 'font-semibold' : ''
+                        className={`text-[10px] px-2.5 py-1 rounded-md transition-colors ${
+                          selectedMood === m.id
+                            ? 'bg-cyan-100 text-cyan-800 border border-cyan-300 font-semibold'
+                            : 'bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium'
                         }`}
-                        style={{
-                          backgroundColor:
-                            selectedMood === m.id
-                              ? 'rgba(6, 182, 212, 0.2)'
-                              : 'var(--surface-elevated)',
-                          border: `1px solid ${
-                            selectedMood === m.id ? 'var(--track-music)' : 'var(--border)'
-                          }`,
-                          color: selectedMood === m.id ? 'var(--track-music)' : 'var(--muted-foreground)',
-                        }}
                       >
                         {m.label}
                       </button>
@@ -326,8 +314,8 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Duration Slider */}
-                <div className="flex items-center justify-between gap-3">
-                  <label className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <label className="text-xs font-medium text-slate-600">
                     Duration
                   </label>
                   <input
@@ -337,9 +325,9 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
                     step={5}
                     value={durationSec}
                     onChange={(e) => setDurationSec(parseInt(e.target.value))}
-                    className="flex-1"
+                    className="flex-1 cursor-pointer"
                   />
-                  <span className="text-xs font-mono w-8 text-right" style={{ color: 'var(--foreground)' }}>
+                  <span className="text-xs font-mono font-semibold text-slate-800 w-8 text-right">
                     {durationSec}s
                   </span>
                 </div>
@@ -349,28 +337,30 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
                   type="button"
                   onClick={handleGenerate}
                   disabled={!prompt.trim() || isGenerating}
-                  className="btn btn-primary text-xs py-2 w-full mt-1"
+                  className="btn btn-primary text-xs py-2.5 w-full rounded-xl font-bold shadow-md mt-1"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>{isGenerating ? progressMsg || 'Generating music…' : 'Generate'}</span>
+                  <span>{isGenerating ? progressMsg || 'Synthesizing music…' : 'Generate background music'}</span>
                 </button>
               </>
             ) : (
               /* Upload Mode */
-              <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-md gap-3" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 rounded-xl gap-3 bg-slate-50/50">
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="audio/*,.wav,.mp3,.ogg,.m4a,.aac"
-                  className="hidden"
+                  style={{ display: 'none' }}
                   onChange={handleAudioUpload}
                 />
-                <Music className="w-8 h-8" style={{ color: 'var(--muted-foreground)' }} />
+                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center text-cyan-600">
+                  <Music className="w-6 h-6" />
+                </div>
                 <div className="text-center">
-                  <p className="text-xs font-medium" style={{ color: 'var(--foreground)' }}>
+                  <p className="text-xs font-bold text-slate-800">
                     Choose an audio file for background music
                   </p>
-                  <p className="text-[11px] font-mono mt-0.5" style={{ color: 'var(--muted-foreground)' }}>
+                  <p className="text-[11px] font-mono text-slate-400 mt-0.5">
                     WAV, MP3, OGG, M4A
                   </p>
                 </div>
@@ -378,7 +368,7 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isGenerating}
-                  className="btn btn-secondary text-xs px-4 py-1.5"
+                  className="btn btn-secondary text-xs px-5 py-2 rounded-xl font-semibold shadow-2xs mt-1"
                 >
                   <Upload className="w-3.5 h-3.5" />
                   <span>{isGenerating ? progressMsg || 'Importing…' : 'Select audio file'}</span>
