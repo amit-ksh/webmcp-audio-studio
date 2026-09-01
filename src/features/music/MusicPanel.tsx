@@ -10,6 +10,7 @@ interface MusicPanelProps {
   isOpen: boolean
   onClose: () => void
   mode?: 'add' | 'replace'
+  targetClipId?: string
 }
 
 const MOOD_OPTIONS: { id: MusicMood; label: string; defaultPrompt: string }[] = [
@@ -35,7 +36,12 @@ const MOOD_OPTIONS: { id: MusicMood; label: string; defaultPrompt: string }[] = 
   },
 ]
 
-export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose, mode = 'add' }) => {
+export const MusicPanel: React.FC<MusicPanelProps> = ({
+  isOpen,
+  onClose,
+  mode = 'add',
+  targetClipId,
+}) => {
   const [tab, setTab] = useState<'ai' | 'upload'>('ai')
   const [prompt, setPrompt] = useState(MOOD_OPTIONS[0].defaultPrompt)
   const [selectedMood, setSelectedMood] = useState<MusicMood>('ambient_minimal')
@@ -46,7 +52,7 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose, mode = 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const addClipToTrack = useProjectStore((state) => state.addClipToTrack)
-  const removeClip = useProjectStore((state) => state.removeClip)
+  const updateClip = useProjectStore((state) => state.updateClip)
 
   if (!isOpen) return null
 
@@ -73,7 +79,7 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose, mode = 
         },
         ({ message }) => setProgressMsg(message),
       )
-      if (mode === 'replace') replaceMusicTrack(asset)
+      if (mode === 'replace') replaceMusicClip(asset)
       onClose()
     } catch (generationError) {
       console.error('Music generation failed:', generationError)
@@ -103,7 +109,7 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose, mode = 
       }
 
       const asset = result.data as AudioAsset
-      if (mode === 'replace') replaceMusicTrack(asset)
+      if (mode === 'replace') replaceMusicClip(asset)
       else addMusicClip(asset)
       onClose()
     } catch (uploadError) {
@@ -131,13 +137,18 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose, mode = 
     })
   }
 
-  const replaceMusicTrack = (asset: AudioAsset) => {
-    const musicTrack = useProjectStore
+  const replaceMusicClip = (asset: AudioAsset) => {
+    const targetClip = useProjectStore
       .getState()
       .currentProject?.tracks.find((track) => track.type === 'music')
-    if (!musicTrack) return
-    musicTrack.clips.forEach((clip) => removeClip(clip.id))
-    addMusicClip(asset)
+      ?.clips.find((clip) => clip.id === targetClipId)
+    if (!targetClip) throw new Error('Background music clip is no longer available')
+    updateClip(targetClip.id, {
+      assetId: asset.id,
+      name: asset.name,
+      durationSec: asset.durationSec,
+      offsetSec: 0,
+    })
   }
 
   return (

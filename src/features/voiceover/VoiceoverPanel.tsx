@@ -2,12 +2,12 @@ import React, { useState } from 'react'
 import { X, Mic, Sparkles } from 'lucide-react'
 import { voiceoverService } from './voiceover-service'
 import { useProjectStore } from '../../stores/project-store'
-import type { AudioAsset } from '../../contracts/project'
 
 interface VoiceoverPanelProps {
   isOpen: boolean
   onClose: () => void
   mode?: 'add' | 'replace'
+  targetClipId?: string
 }
 
 const TEMPLATES = [
@@ -27,6 +27,7 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({
   isOpen,
   onClose,
   mode = 'add',
+  targetClipId,
 }) => {
   const [scriptText, setScriptText] = useState(TEMPLATES[0])
   const [voiceId, setVoiceId] = useState('narrator_male')
@@ -34,8 +35,7 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({
   const [isGenerating, setIsGenerating] = useState(false)
   const [progressMsg, setProgressMsg] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const removeClip = useProjectStore((state) => state.removeClip)
-  const addClipToTrack = useProjectStore((state) => state.addClipToTrack)
+  const updateClip = useProjectStore((state) => state.updateClip)
 
   if (!isOpen) return null
 
@@ -58,13 +58,17 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({
       )
 
       if (mode === 'replace') {
-        const voiceTrack = useProjectStore
+        const targetClip = useProjectStore
           .getState()
           .currentProject?.tracks.find((track) => track.type === 'voiceover')
-        if (voiceTrack) {
-          voiceTrack.clips.forEach((clip) => removeClip(clip.id))
-          addVoiceClip(voiceTrack.id, asset)
-        }
+          ?.clips.find((clip) => clip.id === targetClipId)
+        if (!targetClip) throw new Error('Voiceover clip is no longer available')
+        updateClip(targetClip.id, {
+          assetId: asset.id,
+          name: `Narration: ${scriptText.trim().slice(0, 16)}...`,
+          durationSec: asset.durationSec,
+          offsetSec: 0,
+        })
       }
       onClose()
     } catch (generationError) {
@@ -73,19 +77,6 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({
     } finally {
       setIsGenerating(false)
     }
-  }
-
-  const addVoiceClip = (trackId: string, asset: AudioAsset) => {
-    addClipToTrack(trackId, {
-      assetId: asset.id,
-      name: `Narration: ${scriptText.trim().slice(0, 16)}...`,
-      startSec: 0,
-      durationSec: asset.durationSec,
-      offsetSec: 0,
-      gain: 1,
-      fadeInSec: 0.05,
-      fadeOutSec: 0.05,
-    })
   }
 
   return (

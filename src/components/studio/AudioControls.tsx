@@ -11,11 +11,20 @@ interface ClipGainRowsProps {
   clips: Clip[]
   trackType: Extract<TrackType, 'voiceover' | 'music'>
   onGainChange: (clipId: string, gain: number) => void
+  onReplace: (clipId: string) => void
 }
 
-const ClipGainRows: React.FC<ClipGainRowsProps> = ({ clips, trackType, onGainChange }) => {
+const ClipGainRows: React.FC<ClipGainRowsProps> = ({
+  clips,
+  trackType,
+  onGainChange,
+  onReplace,
+}) => {
   const isVoiceover = trackType === 'voiceover'
   const accentClass = isVoiceover ? 'accent-purple-600' : 'accent-cyan-600'
+  const replaceClass = isVoiceover
+    ? 'text-purple-600 hover:border-purple-200 hover:bg-purple-50'
+    : 'text-cyan-600 hover:border-cyan-200 hover:bg-cyan-50'
   const label = isVoiceover ? 'Voice' : 'BGM'
 
   return (
@@ -28,9 +37,20 @@ const ClipGainRows: React.FC<ClipGainRowsProps> = ({ clips, trackType, onGainCha
           key={clip.id}
           className="grid grid-cols-[minmax(0,1fr)_minmax(84px,1.15fr)_42px] items-center gap-2 rounded-md bg-slate-50/80 px-2 py-1.5"
         >
-          <span className="truncate text-[10px] font-medium text-slate-600" title={clip.name}>
-            {label} {index + 1}
-          </span>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-[10px] font-medium text-slate-600" title={clip.name}>
+              {label} {index + 1}
+            </span>
+            <button
+              type="button"
+              onClick={() => onReplace(clip.id)}
+              className={`flex h-6 w-6 flex-none items-center justify-center rounded-md border border-transparent transition-colors ${replaceClass}`}
+              aria-label={`Replace ${label} ${index + 1}`}
+              title={`Replace ${clip.name}`}
+            >
+              <RefreshCw className="h-3 w-3" />
+            </button>
+          </div>
           <input
             type="range"
             min="0"
@@ -55,6 +75,7 @@ export const AudioControls: React.FC = () => {
   const [audioAction, setAudioAction] = useState<{
     type: 'voiceover' | 'music'
     mode: 'add' | 'replace'
+    targetClipId?: string
   } | null>(null)
   const { currentProject, setTrackGain, toggleTrackMute, removeClip, updateClip } =
     useProjectStore()
@@ -121,11 +142,13 @@ export const AudioControls: React.FC = () => {
           <VoiceoverPanel
             isOpen={audioAction?.type === 'voiceover'}
             mode={audioAction?.mode ?? 'add'}
+            targetClipId={audioAction?.targetClipId}
             onClose={() => setAudioAction(null)}
           />
           <MusicPanel
             isOpen={audioAction?.type === 'music'}
             mode={audioAction?.mode ?? 'add'}
+            targetClipId={audioAction?.targetClipId}
             onClose={() => setAudioAction(null)}
           />
         </div>
@@ -135,7 +158,7 @@ export const AudioControls: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 bg-white">
         {/* Voiceover Card */}
         {voiceTrack && (
-          <div className="p-4 flex flex-col justify-between gap-3.5">
+          <div className="flex flex-col gap-3.5 p-4">
             {/* Card Header: Icon, Name, Clip Count, Clear */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -149,25 +172,14 @@ export const AudioControls: React.FC = () => {
               </div>
 
               {voiceTrack.clips.length > 0 && (
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setAudioAction({ type: 'voiceover', mode: 'replace' })}
-                    className="btn btn-ghost rounded-md px-2 py-1 text-[10px] font-semibold text-purple-700 hover:bg-purple-50"
-                    aria-haspopup="dialog"
-                  >
-                    <RefreshCw className="h-3 w-3" />
-                    <span>Change</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleClearTrackClips(voiceTrack.id)}
-                    className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                    title="Clear all voice clips"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleClearTrackClips(voiceTrack.id)}
+                  className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Clear all voice clips"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               )}
             </div>
 
@@ -176,13 +188,21 @@ export const AudioControls: React.FC = () => {
                 clips={voiceTrack.clips}
                 trackType="voiceover"
                 onGainChange={(clipId, gain) => handleClipGainChange(clipId, gain, voiceTrack.gain)}
+                onReplace={(clipId) =>
+                  setAudioAction({ type: 'voiceover', mode: 'replace', targetClipId: clipId })
+                }
               />
             )}
 
             {/* Volume Control, dB Readout, Mute Button */}
             <div className="flex items-center justify-between gap-3 pt-0.5">
               <div className="flex-1 flex items-center gap-2">
-                <span className="text-[10px] font-mono text-slate-400">Track</span>
+                <span
+                  className="text-[10px] font-mono text-slate-400"
+                  title="Overall volume for every voiceover clip"
+                >
+                  Master
+                </span>
                 <input
                   type="range"
                   min="0"
@@ -191,9 +211,10 @@ export const AudioControls: React.FC = () => {
                   value={voiceTrack.gain}
                   onChange={(e) => setTrackGain(voiceTrack.id, parseFloat(e.target.value))}
                   className="flex-1 cursor-pointer"
+                  aria-label="Voiceover master volume"
                   title={`Gain: ${formatDb(voiceTrack.gain)}`}
                 />
-                <span className="text-[10px] font-mono font-semibold text-slate-600 w-9 text-right">
+                <span className="w-12 whitespace-nowrap text-right font-mono text-[10px] font-semibold text-slate-600">
                   {formatDb(voiceTrack.gain)}
                 </span>
               </div>
@@ -221,9 +242,7 @@ export const AudioControls: React.FC = () => {
 
         {/* Background Music Card */}
         {musicTrack && (
-          <div
-            className={`p-4 flex flex-col gap-3.5 ${musicTrack.clips.length === 0 ? 'justify-center' : 'justify-between'}`}
-          >
+          <div className="flex flex-col gap-3.5 p-4">
             {/* Card Header: Icon, Name, Clip Count, Clear */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -237,25 +256,14 @@ export const AudioControls: React.FC = () => {
               </div>
 
               {musicTrack.clips.length > 0 && (
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setAudioAction({ type: 'music', mode: 'replace' })}
-                    className="btn btn-ghost rounded-md px-2 py-1 text-[10px] font-semibold text-cyan-700 hover:bg-cyan-50"
-                    aria-haspopup="dialog"
-                  >
-                    <RefreshCw className="h-3 w-3" />
-                    <span>Change</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleClearTrackClips(musicTrack.id)}
-                    className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                    title="Clear all music clips"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleClearTrackClips(musicTrack.id)}
+                  className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Clear all music clips"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               )}
             </div>
 
@@ -264,6 +272,9 @@ export const AudioControls: React.FC = () => {
                 clips={musicTrack.clips}
                 trackType="music"
                 onGainChange={(clipId, gain) => handleClipGainChange(clipId, gain, musicTrack.gain)}
+                onReplace={(clipId) =>
+                  setAudioAction({ type: 'music', mode: 'replace', targetClipId: clipId })
+                }
               />
             )}
 
@@ -271,7 +282,12 @@ export const AudioControls: React.FC = () => {
               /* Volume controls are only useful once the track has audio. */
               <div className="flex items-center justify-between gap-3 pt-0.5">
                 <div className="flex-1 flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-slate-400">Track</span>
+                  <span
+                    className="text-[10px] font-mono text-slate-400"
+                    title="Overall volume for every background music clip"
+                  >
+                    Master
+                  </span>
                   <input
                     type="range"
                     min="0"
@@ -280,9 +296,10 @@ export const AudioControls: React.FC = () => {
                     value={musicTrack.gain}
                     onChange={(e) => setTrackGain(musicTrack.id, parseFloat(e.target.value))}
                     className="flex-1 cursor-pointer"
+                    aria-label="Background music master volume"
                     title={`Gain: ${formatDb(musicTrack.gain)}`}
                   />
-                  <span className="text-[10px] font-mono font-semibold text-slate-600 w-9 text-right">
+                  <span className="w-12 whitespace-nowrap text-right font-mono text-[10px] font-semibold text-slate-600">
                     {formatDb(musicTrack.gain)}
                   </span>
                 </div>
