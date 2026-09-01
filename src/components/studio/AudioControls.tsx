@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
-import { Mic, Music, Volume2, VolumeX, Trash2 } from 'lucide-react'
+import { Mic, Music, Volume2, VolumeX, Trash2, RefreshCw } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
 import { formatDb } from '../../lib/utils'
 import { VoiceoverPanel } from '../../features/voiceover/VoiceoverPanel'
 import { MusicPanel } from '../../features/music/MusicPanel'
 
 export const AudioControls: React.FC = () => {
-  const [openPopover, setOpenPopover] = useState<'voiceover' | 'music' | null>(null)
+  const [audioAction, setAudioAction] = useState<{
+    type: 'voiceover' | 'music'
+    mode: 'add' | 'replace'
+  } | null>(null)
   const { currentProject, setTrackGain, toggleTrackMute, removeClip } = useProjectStore()
 
   if (!currentProject) return null
@@ -25,6 +28,12 @@ export const AudioControls: React.FC = () => {
     }
   }
 
+  const toggleAddPopover = (type: 'voiceover' | 'music') => {
+    setAudioAction((current) =>
+      current?.type === type && current.mode === 'add' ? null : { type, mode: 'add' },
+    )
+  }
+
   return (
     <div className="flex flex-col w-full border-t border-slate-200 bg-white">
       {/* Audio Mixer Header & Secondary Add Actions */}
@@ -37,11 +46,9 @@ export const AudioControls: React.FC = () => {
         <div className="relative flex items-center gap-2">
           <button
             type="button"
-            onClick={() =>
-              setOpenPopover((current) => (current === 'voiceover' ? null : 'voiceover'))
-            }
-            className={`btn btn-secondary text-xs py-1.5 px-3 rounded-md text-purple-700 hover:text-purple-800 border-purple-200 hover:bg-purple-50 flex items-center gap-1.5 font-medium ${openPopover === 'voiceover' ? 'bg-purple-50' : ''}`}
-            aria-expanded={openPopover === 'voiceover'}
+            onClick={() => toggleAddPopover('voiceover')}
+            className={`btn btn-secondary text-xs py-1.5 px-3 rounded-md text-purple-700 hover:text-purple-800 border-purple-200 hover:bg-purple-50 flex items-center gap-1.5 font-medium ${audioAction?.type === 'voiceover' ? 'bg-purple-50' : ''}`}
+            aria-expanded={audioAction?.type === 'voiceover'}
             aria-haspopup="dialog"
           >
             <Mic className="w-3 h-3 text-purple-600" />
@@ -50,9 +57,9 @@ export const AudioControls: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => setOpenPopover((current) => (current === 'music' ? null : 'music'))}
-            className={`btn btn-secondary text-xs py-1.5 px-3 rounded-md text-cyan-700 hover:text-cyan-800 border-cyan-200 hover:bg-cyan-50 flex items-center gap-1.5 font-medium ${openPopover === 'music' ? 'bg-cyan-50' : ''}`}
-            aria-expanded={openPopover === 'music'}
+            onClick={() => toggleAddPopover('music')}
+            className={`btn btn-secondary text-xs py-1.5 px-3 rounded-md text-cyan-700 hover:text-cyan-800 border-cyan-200 hover:bg-cyan-50 flex items-center gap-1.5 font-medium ${audioAction?.type === 'music' ? 'bg-cyan-50' : ''}`}
+            aria-expanded={audioAction?.type === 'music'}
             aria-haspopup="dialog"
           >
             <Music className="w-3 h-3 text-cyan-600" />
@@ -60,10 +67,15 @@ export const AudioControls: React.FC = () => {
           </button>
 
           <VoiceoverPanel
-            isOpen={openPopover === 'voiceover'}
-            onClose={() => setOpenPopover(null)}
+            isOpen={audioAction?.type === 'voiceover'}
+            mode={audioAction?.mode ?? 'add'}
+            onClose={() => setAudioAction(null)}
           />
-          <MusicPanel isOpen={openPopover === 'music'} onClose={() => setOpenPopover(null)} />
+          <MusicPanel
+            isOpen={audioAction?.type === 'music'}
+            mode={audioAction?.mode ?? 'add'}
+            onClose={() => setAudioAction(null)}
+          />
         </div>
       </div>
 
@@ -85,14 +97,25 @@ export const AudioControls: React.FC = () => {
               </div>
 
               {voiceTrack.clips.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => handleClearTrackClips(voiceTrack.id)}
-                  className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  title="Clear all voice clips"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setAudioAction({ type: 'voiceover', mode: 'replace' })}
+                    className="btn btn-ghost rounded-md px-2 py-1 text-[10px] font-semibold text-purple-700 hover:bg-purple-50"
+                    aria-haspopup="dialog"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    <span>Change</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleClearTrackClips(voiceTrack.id)}
+                    className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Clear all voice clips"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               )}
             </div>
 
@@ -154,14 +177,25 @@ export const AudioControls: React.FC = () => {
               </div>
 
               {musicTrack.clips.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => handleClearTrackClips(musicTrack.id)}
-                  className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  title="Clear all music clips"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setAudioAction({ type: 'music', mode: 'replace' })}
+                    className="btn btn-ghost rounded-md px-2 py-1 text-[10px] font-semibold text-cyan-700 hover:bg-cyan-50"
+                    aria-haspopup="dialog"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    <span>Change</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleClearTrackClips(musicTrack.id)}
+                    className="p-1 rounded text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Clear all music clips"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               )}
             </div>
 

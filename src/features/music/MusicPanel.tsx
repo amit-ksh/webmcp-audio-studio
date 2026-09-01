@@ -9,6 +9,7 @@ import type { MusicMood } from '../../contracts/audio'
 interface MusicPanelProps {
   isOpen: boolean
   onClose: () => void
+  mode?: 'add' | 'replace'
 }
 
 const MOOD_OPTIONS: { id: MusicMood; label: string; defaultPrompt: string }[] = [
@@ -34,7 +35,7 @@ const MOOD_OPTIONS: { id: MusicMood; label: string; defaultPrompt: string }[] = 
   },
 ]
 
-export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
+export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose, mode = 'add' }) => {
   const [tab, setTab] = useState<'ai' | 'upload'>('ai')
   const [prompt, setPrompt] = useState(MOOD_OPTIONS[0].defaultPrompt)
   const [selectedMood, setSelectedMood] = useState<MusicMood>('ambient_minimal')
@@ -44,8 +45,8 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
-  const currentProject = useProjectStore((state) => state.currentProject)
   const addClipToTrack = useProjectStore((state) => state.addClipToTrack)
+  const removeClip = useProjectStore((state) => state.removeClip)
 
   if (!isOpen) return null
 
@@ -62,16 +63,17 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
     setError(null)
 
     try {
-      await musicService.generateMusic(
+      const asset = await musicService.generateMusic(
         {
           prompt: prompt.trim(),
           mood: selectedMood,
           durationSec,
           bpm: selectedMood === 'energetic_tech' ? 124 : 95,
-          autoInsertToTimeline: true,
+          autoInsertToTimeline: mode === 'add',
         },
         ({ message }) => setProgressMsg(message),
       )
+      if (mode === 'replace') replaceMusicTrack(asset)
       onClose()
     } catch (generationError) {
       console.error('Music generation failed:', generationError)
@@ -101,19 +103,8 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
       }
 
       const asset = result.data as AudioAsset
-      const musicTrack = currentProject?.tracks.find((track) => track.type === 'music')
-      if (musicTrack) {
-        addClipToTrack(musicTrack.id, {
-          assetId: asset.id,
-          name: asset.name,
-          startSec: 0,
-          durationSec: asset.durationSec,
-          offsetSec: 0,
-          gain: 1,
-          fadeInSec: 0,
-          fadeOutSec: 0,
-        })
-      }
+      if (mode === 'replace') replaceMusicTrack(asset)
+      else addMusicClip(asset)
       onClose()
     } catch (uploadError) {
       console.error('Upload failed:', uploadError)
@@ -123,12 +114,38 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
     }
   }
 
+  const addMusicClip = (asset: AudioAsset) => {
+    const musicTrack = useProjectStore
+      .getState()
+      .currentProject?.tracks.find((track) => track.type === 'music')
+    if (!musicTrack) return
+    addClipToTrack(musicTrack.id, {
+      assetId: asset.id,
+      name: asset.name,
+      startSec: 0,
+      durationSec: asset.durationSec,
+      offsetSec: 0,
+      gain: 1,
+      fadeInSec: 0,
+      fadeOutSec: 0,
+    })
+  }
+
+  const replaceMusicTrack = (asset: AudioAsset) => {
+    const musicTrack = useProjectStore
+      .getState()
+      .currentProject?.tracks.find((track) => track.type === 'music')
+    if (!musicTrack) return
+    musicTrack.clips.forEach((clip) => removeClip(clip.id))
+    addMusicClip(asset)
+  }
+
   return (
     <>
       <div className="fixed inset-0 z-30" aria-hidden="true" onMouseDown={onClose} />
       <section
         role="dialog"
-        aria-label="Add background music"
+        aria-label={mode === 'replace' ? 'Change background music' : 'Add background music'}
         className="absolute bottom-full right-0 z-40 mb-2 flex max-h-[min(72dvh,560px)] w-[420px] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.45)]"
         onMouseDown={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
@@ -141,9 +158,13 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
               <Music className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Background music</h2>
+              <h2 className="text-sm font-bold text-slate-900">
+                {mode === 'replace' ? 'Change background music' : 'Background music'}
+              </h2>
               <p className="mt-0.5 text-[10px] text-slate-500">
-                Adds audio directly to the music track
+                {mode === 'replace'
+                  ? 'Replaces BGM without changing voiceover clips'
+                  : 'Adds audio directly to the music track'}
               </p>
             </div>
           </div>
@@ -240,7 +261,11 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
             >
               <Sparkles className="h-3.5 w-3.5" />
               <span>
-                {isGenerating ? progressMsg || 'Synthesizing music...' : 'Generate music'}
+                {isGenerating
+                  ? progressMsg || 'Synthesizing music...'
+                  : mode === 'replace'
+                    ? 'Change background music'
+                    : 'Generate music'}
               </span>
             </button>
           </>
@@ -254,7 +279,9 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({ isOpen, onClose }) => {
               onChange={handleAudioUpload}
             />
             <div>
-              <p className="text-xs font-semibold text-slate-800">Upload background audio</p>
+              <p className="text-xs font-semibold text-slate-800">
+                {mode === 'replace' ? 'Choose replacement audio' : 'Upload background audio'}
+              </p>
               <p className="mt-1 text-[10px] font-mono text-slate-400">WAV, MP3, OGG, M4A</p>
             </div>
             {error && <p className="text-[11px] text-red-700">{error}</p>}

@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 import { X, Mic, Sparkles } from 'lucide-react'
 import { voiceoverService } from './voiceover-service'
+import { useProjectStore } from '../../stores/project-store'
+import type { AudioAsset } from '../../contracts/project'
 
 interface VoiceoverPanelProps {
   isOpen: boolean
   onClose: () => void
+  mode?: 'add' | 'replace'
 }
 
 const TEMPLATES = [
@@ -20,13 +23,19 @@ const VOICES = [
   { id: 'executive_calm', name: 'Executive Calm (Deep)' },
 ]
 
-export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose }) => {
+export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({
+  isOpen,
+  onClose,
+  mode = 'add',
+}) => {
   const [scriptText, setScriptText] = useState(TEMPLATES[0])
   const [voiceId, setVoiceId] = useState('narrator_male')
   const [speed, setSpeed] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
   const [progressMsg, setProgressMsg] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const removeClip = useProjectStore((state) => state.removeClip)
+  const addClipToTrack = useProjectStore((state) => state.addClipToTrack)
 
   if (!isOpen) return null
 
@@ -37,16 +46,26 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
     setError(null)
 
     try {
-      await voiceoverService.generateVoiceover(
+      const asset = await voiceoverService.generateVoiceover(
         {
           text: scriptText.trim(),
           voiceId,
           speed,
           pitch: 1,
-          autoInsertToTimeline: true,
+          autoInsertToTimeline: mode === 'add',
         },
         ({ message }) => setProgressMsg(message),
       )
+
+      if (mode === 'replace') {
+        const voiceTrack = useProjectStore
+          .getState()
+          .currentProject?.tracks.find((track) => track.type === 'voiceover')
+        if (voiceTrack) {
+          voiceTrack.clips.forEach((clip) => removeClip(clip.id))
+          addVoiceClip(voiceTrack.id, asset)
+        }
+      }
       onClose()
     } catch (generationError) {
       console.error('Voiceover generation failed:', generationError)
@@ -56,12 +75,25 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
     }
   }
 
+  const addVoiceClip = (trackId: string, asset: AudioAsset) => {
+    addClipToTrack(trackId, {
+      assetId: asset.id,
+      name: `Narration: ${scriptText.trim().slice(0, 16)}...`,
+      startSec: 0,
+      durationSec: asset.durationSec,
+      offsetSec: 0,
+      gain: 1,
+      fadeInSec: 0.05,
+      fadeOutSec: 0.05,
+    })
+  }
+
   return (
     <>
       <div className="fixed inset-0 z-30" aria-hidden="true" onMouseDown={onClose} />
       <section
         role="dialog"
-        aria-label="Generate voiceover"
+        aria-label={mode === 'replace' ? 'Change voiceover' : 'Generate voiceover'}
         className="absolute bottom-full right-0 z-40 mb-2 flex max-h-[min(72dvh,520px)] w-[400px] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.45)]"
         onMouseDown={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
@@ -74,9 +106,13 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
               <Mic className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Generate voiceover</h2>
+              <h2 className="text-sm font-bold text-slate-900">
+                {mode === 'replace' ? 'Change voiceover' : 'Generate voiceover'}
+              </h2>
               <p className="mt-0.5 text-[10px] text-slate-500">
-                Adds a new clip to the voice track
+                {mode === 'replace'
+                  ? 'Replaces voice clips without changing background music'
+                  : 'Adds a new clip to the voice track'}
               </p>
             </div>
           </div>
@@ -169,7 +205,11 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({ isOpen, onClose 
         >
           <Sparkles className="h-3.5 w-3.5" />
           <span>
-            {isGenerating ? progressMsg || 'Synthesizing speech...' : 'Generate voiceover'}
+            {isGenerating
+              ? progressMsg || 'Synthesizing speech...'
+              : mode === 'replace'
+                ? 'Change voiceover'
+                : 'Generate voiceover'}
           </span>
         </button>
       </section>
