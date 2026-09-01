@@ -185,7 +185,7 @@ export const AudioControls: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200 bg-white">
         {/* Voiceover Card */}
         {voiceTrack && (
-          <div className="flex flex-col gap-3.5 p-4">
+          <div className="flex h-full flex-col gap-3.5 p-4">
             {/* Card Header: Icon, Name, Clip Count, Clear */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -227,7 +227,7 @@ export const AudioControls: React.FC = () => {
             )}
 
             {/* Volume Control, dB Readout, Mute Button */}
-            <div className="flex items-center justify-between gap-3 pt-0.5">
+            <div className="mt-auto flex items-center justify-between gap-3 pt-0.5">
               <div className="flex-1 flex items-center gap-2">
                 <span
                   className="text-[10px] font-mono text-slate-400"
@@ -274,7 +274,7 @@ export const AudioControls: React.FC = () => {
 
         {/* Background Music Card */}
         {musicTrack && (
-          <div className="flex flex-col gap-3.5 p-4">
+          <div className="flex h-full flex-col gap-3.5 p-4">
             {/* Card Header: Icon, Name, Clip Count, Clear */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -315,51 +315,48 @@ export const AudioControls: React.FC = () => {
               />
             )}
 
-            {musicTrack.clips.length > 0 && (
-              /* Volume controls are only useful once the track has audio. */
-              <div className="flex items-center justify-between gap-3 pt-0.5">
-                <div className="flex-1 flex items-center gap-2">
-                  <span
-                    className="text-[10px] font-mono text-slate-400"
-                    title="Overall volume for every background music clip"
-                  >
-                    Master
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1.5"
-                    step="0.05"
-                    value={musicTrack.gain}
-                    onChange={(e) => setTrackGain(musicTrack.id, parseFloat(e.target.value))}
-                    className="flex-1 cursor-pointer"
-                    aria-label="Background music master volume"
-                    title={`Gain: ${formatDb(musicTrack.gain)}`}
-                  />
-                  <span className="w-12 whitespace-nowrap text-right font-mono text-[10px] font-semibold text-slate-600">
-                    {formatDb(musicTrack.gain)}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => toggleTrackMute(musicTrack.id)}
-                  className={`btn text-[11px] py-1 px-2 rounded font-medium ${
-                    musicTrack.muted
-                      ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
-                      : 'btn-secondary text-slate-600 hover:text-slate-900'
-                  }`}
-                  title={musicTrack.muted ? 'Unmute music' : 'Mute music'}
+            <div className="mt-auto flex items-center justify-between gap-3 pt-0.5">
+              <div className="flex-1 flex items-center gap-2">
+                <span
+                  className="text-[10px] font-mono text-slate-400"
+                  title="Overall volume for every background music clip"
                 >
-                  {musicTrack.muted ? (
-                    <VolumeX className="w-3 h-3 text-red-600" />
-                  ) : (
-                    <Volume2 className="w-3 h-3 text-slate-500" />
-                  )}
-                  <span>{musicTrack.muted ? 'Muted' : 'Mute'}</span>
-                </button>
+                  Master
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1.5"
+                  step="0.05"
+                  value={musicTrack.gain}
+                  onChange={(e) => setTrackGain(musicTrack.id, parseFloat(e.target.value))}
+                  className="flex-1 cursor-pointer"
+                  aria-label="Background music master volume"
+                  title={`Gain: ${formatDb(musicTrack.gain)}`}
+                />
+                <span className="w-12 whitespace-nowrap text-right font-mono text-[10px] font-semibold text-slate-600">
+                  {formatDb(musicTrack.gain)}
+                </span>
               </div>
-            )}
+
+              <button
+                type="button"
+                onClick={() => toggleTrackMute(musicTrack.id)}
+                className={`btn text-[11px] py-1 px-2 rounded font-medium ${
+                  musicTrack.muted
+                    ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                    : 'btn-secondary text-slate-600 hover:text-slate-900'
+                }`}
+                title={musicTrack.muted ? 'Unmute music' : 'Mute music'}
+              >
+                {musicTrack.muted ? (
+                  <VolumeX className="w-3 h-3 text-red-600" />
+                ) : (
+                  <Volume2 className="w-3 h-3 text-slate-500" />
+                )}
+                <span>{musicTrack.muted ? 'Muted' : 'Mute'}</span>
+              </button>
+            </div>
           </div>
         )}
       </div>
