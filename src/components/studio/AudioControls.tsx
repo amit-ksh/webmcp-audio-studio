@@ -11,7 +11,12 @@ interface ClipGainRowsProps {
   clips: Clip[]
   trackType: Extract<TrackType, 'voiceover' | 'music'>
   onGainChange: (clipId: string, gain: number) => void
-  onReplace: (clipId: string) => void
+  onReplace: (clipId: string, anchor: HTMLButtonElement) => void
+}
+
+interface PopoverPosition {
+  left: number
+  bottom: number
 }
 
 const ClipGainRows: React.FC<ClipGainRowsProps> = ({
@@ -43,7 +48,7 @@ const ClipGainRows: React.FC<ClipGainRowsProps> = ({
             </span>
             <button
               type="button"
-              onClick={() => onReplace(clip.id)}
+              onClick={(event) => onReplace(clip.id, event.currentTarget)}
               className={`flex h-6 w-6 flex-none items-center justify-center rounded-md border border-transparent transition-colors ${replaceClass}`}
               aria-label={`Replace ${label} ${index + 1}`}
               title={`Replace ${clip.name}`}
@@ -76,6 +81,7 @@ export const AudioControls: React.FC = () => {
     type: 'voiceover' | 'music'
     mode: 'add' | 'replace'
     targetClipId?: string
+    position: PopoverPosition
   } | null>(null)
   const { currentProject, setTrackGain, toggleTrackMute, removeClip, updateClip } =
     useProjectStore()
@@ -96,9 +102,28 @@ export const AudioControls: React.FC = () => {
     }
   }
 
-  const toggleAddPopover = (type: 'voiceover' | 'music') => {
+  const getPopoverPosition = (
+    type: 'voiceover' | 'music',
+    anchor: HTMLButtonElement,
+  ): PopoverPosition => {
+    const viewportPadding = 16
+    const requestedWidth = type === 'music' ? 420 : 400
+    const popoverWidth = Math.min(requestedWidth, window.innerWidth - viewportPadding * 2)
+    const rect = anchor.getBoundingClientRect()
+    return {
+      left: Math.max(
+        viewportPadding,
+        Math.min(rect.right - popoverWidth, window.innerWidth - popoverWidth - viewportPadding),
+      ),
+      bottom: window.innerHeight - rect.top + 8,
+    }
+  }
+
+  const toggleAddPopover = (type: 'voiceover' | 'music', anchor: HTMLButtonElement) => {
     setAudioAction((current) =>
-      current?.type === type && current.mode === 'add' ? null : { type, mode: 'add' },
+      current?.type === type && current.mode === 'add'
+        ? null
+        : { type, mode: 'add', position: getPopoverPosition(type, anchor) },
     )
   }
 
@@ -119,7 +144,7 @@ export const AudioControls: React.FC = () => {
         <div className="relative flex items-center gap-2">
           <button
             type="button"
-            onClick={() => toggleAddPopover('voiceover')}
+            onClick={(event) => toggleAddPopover('voiceover', event.currentTarget)}
             className={`btn btn-secondary text-xs py-1.5 px-3 rounded-md text-purple-700 hover:text-purple-800 border-purple-200 hover:bg-purple-50 flex items-center gap-1.5 font-medium ${audioAction?.type === 'voiceover' ? 'bg-purple-50' : ''}`}
             aria-expanded={audioAction?.type === 'voiceover'}
             aria-haspopup="dialog"
@@ -130,7 +155,7 @@ export const AudioControls: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => toggleAddPopover('music')}
+            onClick={(event) => toggleAddPopover('music', event.currentTarget)}
             className={`btn btn-secondary text-xs py-1.5 px-3 rounded-md text-cyan-700 hover:text-cyan-800 border-cyan-200 hover:bg-cyan-50 flex items-center gap-1.5 font-medium ${audioAction?.type === 'music' ? 'bg-cyan-50' : ''}`}
             aria-expanded={audioAction?.type === 'music'}
             aria-haspopup="dialog"
@@ -143,12 +168,14 @@ export const AudioControls: React.FC = () => {
             isOpen={audioAction?.type === 'voiceover'}
             mode={audioAction?.mode ?? 'add'}
             targetClipId={audioAction?.targetClipId}
+            anchorPosition={audioAction?.position}
             onClose={() => setAudioAction(null)}
           />
           <MusicPanel
             isOpen={audioAction?.type === 'music'}
             mode={audioAction?.mode ?? 'add'}
             targetClipId={audioAction?.targetClipId}
+            anchorPosition={audioAction?.position}
             onClose={() => setAudioAction(null)}
           />
         </div>
@@ -188,8 +215,13 @@ export const AudioControls: React.FC = () => {
                 clips={voiceTrack.clips}
                 trackType="voiceover"
                 onGainChange={(clipId, gain) => handleClipGainChange(clipId, gain, voiceTrack.gain)}
-                onReplace={(clipId) =>
-                  setAudioAction({ type: 'voiceover', mode: 'replace', targetClipId: clipId })
+                onReplace={(clipId, anchor) =>
+                  setAudioAction({
+                    type: 'voiceover',
+                    mode: 'replace',
+                    targetClipId: clipId,
+                    position: getPopoverPosition('voiceover', anchor),
+                  })
                 }
               />
             )}
@@ -272,8 +304,13 @@ export const AudioControls: React.FC = () => {
                 clips={musicTrack.clips}
                 trackType="music"
                 onGainChange={(clipId, gain) => handleClipGainChange(clipId, gain, musicTrack.gain)}
-                onReplace={(clipId) =>
-                  setAudioAction({ type: 'music', mode: 'replace', targetClipId: clipId })
+                onReplace={(clipId, anchor) =>
+                  setAudioAction({
+                    type: 'music',
+                    mode: 'replace',
+                    targetClipId: clipId,
+                    position: getPopoverPosition('music', anchor),
+                  })
                 }
               />
             )}

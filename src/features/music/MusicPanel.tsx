@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { X, Music, Sparkles, Upload } from 'lucide-react'
 import { musicService } from './music-service'
 import { useProjectStore } from '../../stores/project-store'
@@ -11,6 +11,7 @@ interface MusicPanelProps {
   onClose: () => void
   mode?: 'add' | 'replace'
   targetClipId?: string
+  anchorPosition?: { left: number; bottom: number }
 }
 
 const MOOD_OPTIONS: { id: MusicMood; label: string; defaultPrompt: string }[] = [
@@ -41,6 +42,7 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({
   onClose,
   mode = 'add',
   targetClipId,
+  anchorPosition,
 }) => {
   const [tab, setTab] = useState<'ai' | 'upload'>('ai')
   const [prompt, setPrompt] = useState(MOOD_OPTIONS[0].defaultPrompt)
@@ -53,6 +55,25 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({
 
   const addClipToTrack = useProjectStore((state) => state.addClipToTrack)
   const updateClip = useProjectStore((state) => state.updateClip)
+  const assets = useProjectStore((state) => state.assets)
+
+  useEffect(() => {
+    if (!isOpen || mode !== 'replace' || !targetClipId) return
+    const targetClip = useProjectStore
+      .getState()
+      .currentProject?.tracks.find((track) => track.type === 'music')
+      ?.clips.find((clip) => clip.id === targetClipId)
+    const metadata = assets.find((asset) => asset.id === targetClip?.assetId)?.metadata
+    if (typeof metadata?.prompt === 'string') setPrompt(metadata.prompt)
+    if (
+      typeof metadata?.mood === 'string' &&
+      MOOD_OPTIONS.some((option) => option.id === metadata.mood)
+    ) {
+      setSelectedMood(metadata.mood as MusicMood)
+    }
+    if (typeof metadata?.durationSec === 'number') setDurationSec(metadata.durationSec)
+    setError(null)
+  }, [assets, isOpen, mode, targetClipId])
 
   if (!isOpen) return null
 
@@ -157,7 +178,8 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({
       <section
         role="dialog"
         aria-label={mode === 'replace' ? 'Change background music' : 'Add background music'}
-        className="absolute bottom-full right-0 z-40 mb-2 flex max-h-[min(72dvh,560px)] w-[420px] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.45)]"
+        className="fixed z-40 flex max-h-[min(72dvh,560px)] w-[420px] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.45)]"
+        style={anchorPosition}
         onMouseDown={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
           if (event.key === 'Escape') onClose()

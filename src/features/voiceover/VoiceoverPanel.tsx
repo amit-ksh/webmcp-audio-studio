@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { X, Mic, Sparkles } from 'lucide-react'
 import { voiceoverService } from './voiceover-service'
 import { useProjectStore } from '../../stores/project-store'
@@ -8,6 +8,7 @@ interface VoiceoverPanelProps {
   onClose: () => void
   mode?: 'add' | 'replace'
   targetClipId?: string
+  anchorPosition?: { left: number; bottom: number }
 }
 
 const TEMPLATES = [
@@ -28,6 +29,7 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({
   onClose,
   mode = 'add',
   targetClipId,
+  anchorPosition,
 }) => {
   const [scriptText, setScriptText] = useState(TEMPLATES[0])
   const [voiceId, setVoiceId] = useState('narrator_male')
@@ -36,6 +38,20 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({
   const [progressMsg, setProgressMsg] = useState('')
   const [error, setError] = useState<string | null>(null)
   const updateClip = useProjectStore((state) => state.updateClip)
+  const assets = useProjectStore((state) => state.assets)
+
+  useEffect(() => {
+    if (!isOpen || mode !== 'replace' || !targetClipId) return
+    const targetClip = useProjectStore
+      .getState()
+      .currentProject?.tracks.find((track) => track.type === 'voiceover')
+      ?.clips.find((clip) => clip.id === targetClipId)
+    const metadata = assets.find((asset) => asset.id === targetClip?.assetId)?.metadata
+    if (typeof metadata?.scriptText === 'string') setScriptText(metadata.scriptText)
+    if (typeof metadata?.voiceId === 'string') setVoiceId(metadata.voiceId)
+    if (typeof metadata?.speed === 'number') setSpeed(metadata.speed)
+    setError(null)
+  }, [assets, isOpen, mode, targetClipId])
 
   if (!isOpen) return null
 
@@ -85,7 +101,8 @@ export const VoiceoverPanel: React.FC<VoiceoverPanelProps> = ({
       <section
         role="dialog"
         aria-label={mode === 'replace' ? 'Change voiceover' : 'Generate voiceover'}
-        className="absolute bottom-full right-0 z-40 mb-2 flex max-h-[min(72dvh,520px)] w-[400px] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.45)]"
+        className="fixed z-40 flex max-h-[min(72dvh,520px)] w-[400px] max-w-[calc(100vw-2rem)] flex-col gap-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.45)]"
+        style={anchorPosition}
         onMouseDown={(event) => event.stopPropagation()}
         onKeyDown={(event) => {
           if (event.key === 'Escape') onClose()
