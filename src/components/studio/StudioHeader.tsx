@@ -34,7 +34,10 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
       {/* Left: Branding & Status */}
       <div className="flex items-center gap-2.5">
         <div>
-          <span className="text-sm font-semibold tracking-tight text-slate-900">
+          <span
+            className="text-xl font-extrabold tracking-[-0.04em] leading-none text-slate-900"
+            style={{ fontFamily: '"Segoe UI Variable Display", "Avenir Next", "Trebuchet MS", sans-serif' }}
+          >
             Waveframe
           </span>
         </div>
