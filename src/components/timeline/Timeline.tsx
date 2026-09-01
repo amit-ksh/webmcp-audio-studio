@@ -23,14 +23,6 @@ export const Timeline: React.FC = () => {
   const voiceTrack = currentProject.tracks.find((t) => t.type === 'voiceover')
   const musicTrack = currentProject.tracks.find((t) => t.type === 'music')
 
-  // Collect speech intervals for visual ducking zones
-  const voiceClips: { start: number; end: number }[] = []
-  if (voiceTrack && !voiceTrack.muted) {
-    for (const c of voiceTrack.clips) {
-      voiceClips.push({ start: c.startSec, end: c.startSec + c.durationSec })
-    }
-  }
-
   // Ruler tick intervals
   const rulerIntervalSec = zoom < 30 ? 15 : zoom < 60 ? 10 : 5
   const ticks: number[] = []
@@ -178,22 +170,7 @@ export const Timeline: React.FC = () => {
 
             {/* Lane 3: Music Track */}
             {musicTrack && (
-              <div className="relative">
-                {/* Visual sidechain ducking highlights */}
-                {currentProject.ducking?.enabled &&
-                  voiceClips.map((vc, idx) => (
-                    <div
-                      key={idx}
-                      className="absolute top-0 bottom-0 pointer-events-none z-10 bg-amber-100/40 border-l border-r border-dashed border-amber-400"
-                      style={{
-                        left: `${vc.start * zoom}px`,
-                        width: `${Math.max(10, (vc.end - vc.start) * zoom)}px`,
-                      }}
-                      aria-hidden="true"
-                    />
-                  ))}
-                <TimelineTrack track={musicTrack} zoom={zoom} totalDurationSec={totalDuration} />
-              </div>
+              <TimelineTrack track={musicTrack} zoom={zoom} totalDurationSec={totalDuration} />
             )}
           </div>
         </div>
