@@ -4,13 +4,60 @@ import { useProjectStore } from '../../stores/project-store'
 import { formatDb } from '../../lib/utils'
 import { VoiceoverPanel } from '../../features/voiceover/VoiceoverPanel'
 import { MusicPanel } from '../../features/music/MusicPanel'
+import type { Clip, TrackType } from '../../contracts/project'
+import { audioEngine } from '../../audio/engine'
+
+interface ClipGainRowsProps {
+  clips: Clip[]
+  trackType: Extract<TrackType, 'voiceover' | 'music'>
+  onGainChange: (clipId: string, gain: number) => void
+}
+
+const ClipGainRows: React.FC<ClipGainRowsProps> = ({ clips, trackType, onGainChange }) => {
+  const isVoiceover = trackType === 'voiceover'
+  const accentClass = isVoiceover ? 'accent-purple-600' : 'accent-cyan-600'
+  const label = isVoiceover ? 'Voice' : 'BGM'
+
+  return (
+    <div className="flex max-h-32 flex-col gap-1.5 overflow-y-auto border-t border-slate-100 pt-2.5">
+      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+        Clip volumes
+      </span>
+      {clips.map((clip, index) => (
+        <div
+          key={clip.id}
+          className="grid grid-cols-[minmax(0,1fr)_minmax(84px,1.15fr)_42px] items-center gap-2 rounded-md bg-slate-50/80 px-2 py-1.5"
+        >
+          <span className="truncate text-[10px] font-medium text-slate-600" title={clip.name}>
+            {label} {index + 1}
+          </span>
+          <input
+            type="range"
+            min="0"
+            max="1.5"
+            step="0.05"
+            value={clip.gain}
+            onChange={(event) => onGainChange(clip.id, parseFloat(event.target.value))}
+            className={`w-full cursor-pointer ${accentClass}`}
+            aria-label={`${label} ${index + 1} volume`}
+            title={`${clip.name}: ${clip.gain.toFixed(2)}x`}
+          />
+          <span className="text-right font-mono text-[10px] font-semibold text-slate-700">
+            {clip.gain.toFixed(2)}x
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export const AudioControls: React.FC = () => {
   const [audioAction, setAudioAction] = useState<{
     type: 'voiceover' | 'music'
     mode: 'add' | 'replace'
   } | null>(null)
-  const { currentProject, setTrackGain, toggleTrackMute, removeClip } = useProjectStore()
+  const { currentProject, setTrackGain, toggleTrackMute, removeClip, updateClip } =
+    useProjectStore()
 
   if (!currentProject) return null
 
@@ -32,6 +79,11 @@ export const AudioControls: React.FC = () => {
     setAudioAction((current) =>
       current?.type === type && current.mode === 'add' ? null : { type, mode: 'add' },
     )
+  }
+
+  const handleClipGainChange = (clipId: string, gain: number, trackGain: number) => {
+    updateClip(clipId, { gain })
+    audioEngine.setClipGain(clipId, gain, trackGain)
   }
 
   return (
@@ -119,10 +171,18 @@ export const AudioControls: React.FC = () => {
               )}
             </div>
 
+            {voiceTrack.clips.length > 0 && (
+              <ClipGainRows
+                clips={voiceTrack.clips}
+                trackType="voiceover"
+                onGainChange={(clipId, gain) => handleClipGainChange(clipId, gain, voiceTrack.gain)}
+              />
+            )}
+
             {/* Volume Control, dB Readout, Mute Button */}
             <div className="flex items-center justify-between gap-3 pt-0.5">
               <div className="flex-1 flex items-center gap-2">
-                <span className="text-[11px] font-mono text-slate-400">Vol</span>
+                <span className="text-[10px] font-mono text-slate-400">Track</span>
                 <input
                   type="range"
                   min="0"
@@ -200,10 +260,18 @@ export const AudioControls: React.FC = () => {
             </div>
 
             {musicTrack.clips.length > 0 && (
+              <ClipGainRows
+                clips={musicTrack.clips}
+                trackType="music"
+                onGainChange={(clipId, gain) => handleClipGainChange(clipId, gain, musicTrack.gain)}
+              />
+            )}
+
+            {musicTrack.clips.length > 0 && (
               /* Volume controls are only useful once the track has audio. */
               <div className="flex items-center justify-between gap-3 pt-0.5">
                 <div className="flex-1 flex items-center gap-2">
-                  <span className="text-[11px] font-mono text-slate-400">Vol</span>
+                  <span className="text-[10px] font-mono text-slate-400">Track</span>
                   <input
                     type="range"
                     min="0"

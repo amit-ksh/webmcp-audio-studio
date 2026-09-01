@@ -47,6 +47,16 @@ class AudioEngine {
     }
   }
 
+  public setClipGain(clipId: string, clipGain: number, trackGain = 1): void {
+    const ctx = getAudioContext()
+    const effectiveGain = clipGain * trackGain
+    for (const item of this.activeSources) {
+      if (item.clip.id === clipId) {
+        item.gainNode.gain.setValueAtTime(effectiveGain, ctx.currentTime)
+      }
+    }
+  }
+
   public setTimeUpdateListener(cb: (time: number) => void): void {
     this.onTimeUpdateCallback = cb
   }
@@ -135,11 +145,7 @@ class AudioEngine {
       if (track.muted) continue
 
       const targetBus =
-        track.type === 'voiceover'
-          ? voiceBus
-          : track.type === 'music'
-            ? musicBus
-            : sfxBus
+        track.type === 'voiceover' ? voiceBus : track.type === 'music' ? musicBus : sfxBus
 
       for (const clip of track.clips) {
         const clipStart = clip.startSec
