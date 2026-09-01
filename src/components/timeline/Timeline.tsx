@@ -173,11 +173,7 @@ export const Timeline: React.FC = () => {
 
             {/* Lane 2: Voiceover Track */}
             {voiceTrack && (
-              <TimelineTrack
-                track={voiceTrack}
-                zoom={zoom}
-                totalDurationSec={totalDuration}
-              />
+              <TimelineTrack track={voiceTrack} zoom={zoom} totalDurationSec={totalDuration} />
             )}
 
             {/* Lane 3: Music Track */}
@@ -193,17 +189,10 @@ export const Timeline: React.FC = () => {
                         left: `${vc.start * zoom}px`,
                         width: `${Math.max(10, (vc.end - vc.start) * zoom)}px`,
                       }}
-                    >
-                      <span className="text-[8px] font-mono text-amber-700 font-semibold px-1 py-0.5 block">
-                        Ducked
-                      </span>
-                    </div>
+                      aria-hidden="true"
+                    />
                   ))}
-                <TimelineTrack
-                  track={musicTrack}
-                  zoom={zoom}
-                  totalDurationSec={totalDuration}
-                />
+                <TimelineTrack track={musicTrack} zoom={zoom} totalDurationSec={totalDuration} />
               </div>
             )}
           </div>

@@ -1,17 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Mic, Music, Volume2, VolumeX, Trash2 } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
 import { formatDb } from '../../lib/utils'
+import { VoiceoverPanel } from '../../features/voiceover/VoiceoverPanel'
+import { MusicPanel } from '../../features/music/MusicPanel'
 
-interface AudioControlsProps {
-  onOpenVoiceoverModal: () => void
-  onOpenMusicModal: () => void
-}
-
-export const AudioControls: React.FC<AudioControlsProps> = ({
-  onOpenVoiceoverModal,
-  onOpenMusicModal,
-}) => {
+export const AudioControls: React.FC = () => {
+  const [openPopover, setOpenPopover] = useState<'voiceover' | 'music' | null>(null)
   const { currentProject, setTrackGain, toggleTrackMute, removeClip } = useProjectStore()
 
   if (!currentProject) return null
@@ -39,11 +34,15 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
         </span>
 
         {/* Secondary Add Audio Actions */}
-        <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-2">
           <button
             type="button"
-            onClick={onOpenVoiceoverModal}
-            className="btn btn-secondary text-xs py-1.5 px-3 rounded-md text-purple-700 hover:text-purple-800 border-purple-200 hover:bg-purple-50 flex items-center gap-1.5 font-medium"
+            onClick={() =>
+              setOpenPopover((current) => (current === 'voiceover' ? null : 'voiceover'))
+            }
+            className={`btn btn-secondary text-xs py-1.5 px-3 rounded-md text-purple-700 hover:text-purple-800 border-purple-200 hover:bg-purple-50 flex items-center gap-1.5 font-medium ${openPopover === 'voiceover' ? 'bg-purple-50' : ''}`}
+            aria-expanded={openPopover === 'voiceover'}
+            aria-haspopup="dialog"
           >
             <Mic className="w-3 h-3 text-purple-600" />
             <span>Voiceover</span>
@@ -51,12 +50,20 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
 
           <button
             type="button"
-            onClick={onOpenMusicModal}
-            className="btn btn-secondary text-xs py-1.5 px-3 rounded-md text-cyan-700 hover:text-cyan-800 border-cyan-200 hover:bg-cyan-50 flex items-center gap-1.5 font-medium"
+            onClick={() => setOpenPopover((current) => (current === 'music' ? null : 'music'))}
+            className={`btn btn-secondary text-xs py-1.5 px-3 rounded-md text-cyan-700 hover:text-cyan-800 border-cyan-200 hover:bg-cyan-50 flex items-center gap-1.5 font-medium ${openPopover === 'music' ? 'bg-cyan-50' : ''}`}
+            aria-expanded={openPopover === 'music'}
+            aria-haspopup="dialog"
           >
             <Music className="w-3 h-3 text-cyan-600" />
             <span>Background music</span>
           </button>
+
+          <VoiceoverPanel
+            isOpen={openPopover === 'voiceover'}
+            onClose={() => setOpenPopover(null)}
+          />
+          <MusicPanel isOpen={openPopover === 'music'} onClose={() => setOpenPopover(null)} />
         </div>
       </div>
 

@@ -6,8 +6,6 @@ import { VideoUploader } from '../../features/video/components/VideoUploader'
 import { VideoPreview } from '../../features/video/components/VideoPreview'
 import { Timeline } from '../timeline/Timeline'
 import { AudioControls } from './AudioControls'
-import { VoiceoverPanel } from '../../features/voiceover/VoiceoverPanel'
-import { MusicPanel } from '../../features/music/MusicPanel'
 import { ExportModal } from './ExportModal'
 import { WebMCPModal } from './WebMCPModal'
 import { registerWebMCPTools } from '../../webmcp/register-tools'
@@ -15,10 +13,7 @@ import { commandBus } from '../../webmcp/bus'
 import { AlertCircle } from 'lucide-react'
 
 export const StudioShell: React.FC = () => {
-  const {
-    initStore: initProjectStore,
-    updateProjectMeta,
-  } = useProjectStore()
+  const { initStore: initProjectStore, updateProjectMeta } = useProjectStore()
   const {
     videos,
     selectedVideoId,
@@ -27,8 +22,6 @@ export const StudioShell: React.FC = () => {
     selectVideo,
   } = useVideoStore()
 
-  const [isVoiceoverOpen, setIsVoiceoverOpen] = useState(false)
-  const [isMusicOpen, setIsMusicOpen] = useState(false)
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isWebMCPOpen, setIsWebMCPOpen] = useState(false)
   const [isChangingVideo, setIsChangingVideo] = useState(false)
@@ -122,34 +115,15 @@ export const StudioShell: React.FC = () => {
             <Timeline />
 
             {/* 3. Audio Mixer */}
-            <AudioControls
-              onOpenVoiceoverModal={() => setIsVoiceoverOpen(true)}
-              onOpenMusicModal={() => setIsMusicOpen(true)}
-            />
+            <AudioControls />
           </div>
         </main>
       )}
 
-      {/* Modals for Voiceover, Music, Export, and WebMCP Tools */}
-      <VoiceoverPanel
-        isOpen={isVoiceoverOpen}
-        onClose={() => setIsVoiceoverOpen(false)}
-      />
+      {/* Modals for Export and WebMCP Tools */}
+      <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} />
 
-      <MusicPanel
-        isOpen={isMusicOpen}
-        onClose={() => setIsMusicOpen(false)}
-      />
-
-      <ExportModal
-        isOpen={isExportOpen}
-        onClose={() => setIsExportOpen(false)}
-      />
-
-      <WebMCPModal
-        isOpen={isWebMCPOpen}
-        onClose={() => setIsWebMCPOpen(false)}
-      />
+      <WebMCPModal isOpen={isWebMCPOpen} onClose={() => setIsWebMCPOpen(false)} />
     </div>
   )
 }
