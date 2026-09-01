@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { X, Music, Sparkles, Upload } from 'lucide-react'
 import { musicService } from './music-service'
 import { useProjectStore } from '../../stores/project-store'
+import { useVideoStore } from '../../stores/video-store'
 import { commandBus } from '../../webmcp/bus'
 import type { AudioAsset } from '../../contracts/project'
 import type { MusicMood } from '../../contracts/audio'
@@ -56,6 +57,14 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({
   const addClipToTrack = useProjectStore((state) => state.addClipToTrack)
   const updateClip = useProjectStore((state) => state.updateClip)
   const assets = useProjectStore((state) => state.assets)
+  const selectedVideoDurationSec = useVideoStore(
+    (state) => state.videos.find((video) => video.id === state.selectedVideoId)?.durationSec ?? null,
+  )
+  const maxDurationSec =
+    selectedVideoDurationSec && Number.isFinite(selectedVideoDurationSec) && selectedVideoDurationSec > 0
+      ? Number(selectedVideoDurationSec.toFixed(1))
+      : 120
+  const minDurationSec = Math.min(3, maxDurationSec)
 
   useEffect(() => {
     if (!isOpen || mode !== 'replace' || !targetClipId) return
@@ -74,6 +83,12 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({
     if (typeof metadata?.durationSec === 'number') setDurationSec(metadata.durationSec)
     setError(null)
   }, [assets, isOpen, mode, targetClipId])
+
+  useEffect(() => {
+    setDurationSec((currentDuration) =>
+      Math.min(Math.max(currentDuration, minDurationSec), maxDurationSec),
+    )
+  }, [maxDurationSec, minDurationSec])
 
   if (!isOpen) return null
 
@@ -268,12 +283,17 @@ export const MusicPanel: React.FC<MusicPanelProps> = ({
               <input
                 id="music-duration"
                 type="range"
-                min={10}
-                max={120}
-                step={5}
+                min={minDurationSec}
+                max={maxDurationSec}
+                step={0.5}
                 value={durationSec}
-                onChange={(event) => setDurationSec(parseInt(event.target.value))}
+                onChange={(event) => setDurationSec(parseFloat(event.target.value))}
                 className="flex-1 cursor-pointer"
+                title={
+                  selectedVideoDurationSec
+                    ? `Maximum duration: ${maxDurationSec}s (selected video length)`
+                    : 'Maximum duration: 120s'
+                }
               />
               <span className="w-9 text-right font-mono text-xs font-semibold text-slate-800">
                 {durationSec}s
