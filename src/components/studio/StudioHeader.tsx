@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sparkles, Plus, Download, Bot, Terminal } from 'lucide-react'
+import { Plus, Download, Bot, Terminal } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
 import { useVideoStore } from '../../stores/video-store'
 import { useAgentStore } from '../../stores/agent-store'
@@ -33,9 +33,6 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
     <header className="flex items-center justify-between py-3.5 mb-4 border-b border-slate-200/80">
       {/* Left: Branding & Status */}
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-2xs">
-          <Sparkles className="w-3.5 h-3.5" />
-        </div>
         <div>
           <span className="text-sm font-semibold tracking-tight text-slate-900">
             Waveframe
