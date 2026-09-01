@@ -1,6 +1,9 @@
 [build]
   command = "pnpm build"
-  publish = ".output/public"
+
+[dev]
+  command = "pnpm dev"
+  port = 3000
 
 [[headers]]
   for = "/*"
@@ -8,8 +11,3 @@
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "credentialless"
     Access-Control-Allow-Origin = "*"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
