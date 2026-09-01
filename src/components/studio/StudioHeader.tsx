@@ -36,20 +36,10 @@ export const StudioHeader: React.FC<StudioHeaderProps> = ({
         <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-2xs">
           <Sparkles className="w-3.5 h-3.5" />
         </div>
-        <div className="flex items-center gap-2">
+        <div>
           <span className="text-sm font-semibold tracking-tight text-slate-900">
-            Audio Studio
+            Waveframe
           </span>
-
-          <button
-            type="button"
-            onClick={onOpenWebMCP}
-            className="text-[10px] font-mono font-medium px-2.5 py-1 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer"
-            title="Click to view 13 available WebMCP tools"
-          >
-            <span>WebMCP</span>
-            <span className="text-[9px] leading-none bg-blue-200/70 text-blue-800 rounded px-1.5 py-0.5">13</span>
-          </button>
         </div>
 
         {isAgentActive && (

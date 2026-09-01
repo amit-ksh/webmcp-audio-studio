@@ -13,7 +13,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'WebMCP Audio Studio — Browser-First AI Audio Production',
+        title: 'Waveframe — Browser-First AI Audio Production',
       },
       {
         name: 'description',
