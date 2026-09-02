@@ -8,6 +8,11 @@ dist-ssr
 .tanstack
 .wrangler
 .output
+.pnpm-store
 .vinxi
 __unconfig*
 todos.json
+
+# Local Netlify folder
+.netlify
+
