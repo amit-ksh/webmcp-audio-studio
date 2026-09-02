@@ -16,6 +16,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      '.netlify/**',
       '.output/**',
       '.tanstack/**',
       'node_modules/**',

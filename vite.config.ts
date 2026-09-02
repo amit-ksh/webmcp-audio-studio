@@ -6,7 +6,18 @@ import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [tanstackStart(), netlify(), viteReact(), tailwindcss()],
+  plugins: [
+    tanstackStart(),
+    netlify({
+      dev: {
+        edgeFunctions: {
+          enabled: false,
+        },
+      },
+    }),
+    viteReact(),
+    tailwindcss(),
+  ],
   worker: {
     format: 'es',
   },
