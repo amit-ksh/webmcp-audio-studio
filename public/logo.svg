@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 90" width="100%" height="100%" fill="none">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap');
+      .brand-title {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-weight: 800;
+        font-size: 52px;
+        letter-spacing: -0.04em;
+        fill: #090D16;
+      }
+      .brand-badge {
+        fill: #090D16;
+      }
+      .brand-bars {
+        fill: #FFFFFF;
+      }
+    </style>
+  </defs>
+
+  <!-- Logo Mark Icon -->
+  <g transform="translate(10, 5)">
+    <!-- Dark Rounded Squircle Badge -->
+    <rect width="80" height="80" rx="18" class="brand-badge" />
+    
+    <!-- AI Audio Waveform / Equalizer Grid -->
+    <g class="brand-bars">
+      <!-- Col 1: Left Square -->
+      <rect x="11" y="35" width="10.5" height="10.5" rx="1.5" />
+      
+      <!-- Col 2: Mid-Left Step Bar -->
+      <rect x="23.5" y="24" width="10.5" height="21.5" rx="1.5" />
+      
+      <!-- Col 3: Center Tall Pillar -->
+      <rect x="36" y="13" width="10.5" height="54" rx="2" />
+      
+      <!-- Col 4: Mid-Right Step Bar -->
+      <rect x="48.5" y="35" width="10.5" height="21.5" rx="1.5" />
+      
+      <!-- Col 5: Right Square -->
+      <rect x="61" y="35" width="10.5" height="10.5" rx="1.5" />
+    </g>
+  </g>
+
+  <!-- Brand Typography -->
+  <text x="110" y="63" class="brand-title">Waveframe</text>
+</svg>
